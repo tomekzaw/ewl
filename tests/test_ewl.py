@@ -1,9 +1,10 @@
+from math import sqrt
 from typing import Dict
 
 import numpy as np
 import pytest
 
-from ewl import i, pi, sqrt2, ket, U_theta_alpha_beta, U_theta_phi_lambda, U, J
+from ewl import i, pi, sqrt2, ket, is_unit_vector, number_of_qbits, U_theta_alpha_beta, U_theta_phi_lambda, U, J
 
 
 @pytest.mark.parametrize('base_state, expected', [
@@ -26,6 +27,28 @@ def test_ket(base_state: str, expected: np.array):
 def test_ket_error(invalid_state: str):
     with pytest.raises(AssertionError):
         ket(invalid_state)
+
+
+@pytest.mark.parametrize('vec, expected', [
+    (ket('10'), True),
+    (ket('10') * 2, False),
+    ((ket('00') + i * ket('11')) / sqrt2, True),
+    ((ket('00') + i * ket('11')) / sqrt(3), False),
+    ((ket('000') + i * ket('111')) / sqrt2, True),
+])
+def test_is_unit_vector(vec: np.array, expected: bool):
+    assert is_unit_vector(vec) == expected
+
+
+@pytest.mark.parametrize('psi, expected', [
+    (ket('1'), 1),
+    (ket('10'), 2),
+    (ket('101'), 3),
+    (ket('1011'), 4),
+    (ket('10110'), 5),
+])
+def test_number_of_qbits(psi: np.array, expected: int):
+    assert number_of_qbits(psi) == expected
 
 
 @pytest.mark.parametrize('kwargs, expected', [

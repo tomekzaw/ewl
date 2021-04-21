@@ -1,6 +1,8 @@
 from cmath import sqrt, pi, sin, cos, exp
-from functools import cached_property
-from typing import Optional
+from functools import cached_property, reduce
+from itertools import product
+from math import log2
+from typing import Optional, Sequence
 
 import numpy as np
 from qiskit import QuantumCircuit, execute, Aer, IBMQ
@@ -31,6 +33,16 @@ def ket(base_state: str, /) -> np.array:
     return vector
 
 
+def is_unit_vector(vec: np.array) -> bool:
+    return np.isclose(np.linalg.norm(vec), 1)
+
+
+def number_of_qbits(psi: np.array) -> int:
+    n = psi.shape[0]
+    assert (n & (n - 1) == 0) and n != 0, 'Vector size must be a power of two'
+    return int(log2(n))
+
+
 def U_theta_alpha_beta(*, theta: complex, alpha: complex, beta: complex = 3 * pi / 2) -> np.array:
     return np.array([
         [exp(i * alpha) * cos(theta / 2), i * exp(i * beta) * sin(theta / 2)],
@@ -56,24 +68,19 @@ def U(*args, **kwargs: complex) -> np.array:
 
 
 def J(psi: np.array, C: np.array, D: np.array) -> np.array:
-    CC = np.kron(C, C)
-    CD = np.kron(C, D)
-    DC = np.kron(D, C)
-    DD = np.kron(D, D)
-
-    vec00 = np.dot(CC, psi)
-    vec01 = np.dot(CD, psi)
-    vec10 = np.dot(DC, psi)
-    vec11 = np.dot(DD, psi)
-
-    return np.column_stack((vec00, vec01, vec10, vec11))
+    return np.column_stack([
+        np.dot(reduce(np.kron, base), psi)
+        for base in product((C, D), repeat=number_of_qbits(psi))
+    ])
 
 
 class ExtendedEWL:
-    def __init__(self, *, psi: np.array, alice: np.array, bob: np.array, provider: Optional[AccountProvider] = None):
+    def __init__(self, psi: np.array, strategies: Sequence[np.array], provider: Optional[AccountProvider] = None):
+        assert is_unit_vector(psi), 'Initial state must be a unit vector'
+        assert len(strategies) == number_of_qbits(psi), 'Number of strategies must be equal to number of qbits'
+
         self.psi = psi
-        self.alice = alice
-        self.bob = bob
+        self.strategies = strategies
 
         if provider is None:
             try:
@@ -82,6 +89,10 @@ class ExtendedEWL:
                 raise RuntimeError('Please run this notebook on https://quantum-computing.ibm.com/lab')
         else:
             self.provider = provider
+
+    @cached_property
+    def number_of_players(self) -> int:
+        return len(self.strategies)
 
     @cached_property
     def j(self) -> np.array:
@@ -93,16 +104,18 @@ class ExtendedEWL:
     def qc(self) -> QuantumCircuit:
         j = Operator(self.j)
         j_h = Operator(np.conjugate(self.j).T)
-        u_a = Operator(self.alice)
-        u_b = Operator(self.bob)
+        all_qbits = list(range(self.number_of_players))
 
-        qc = QuantumCircuit(2)
-        qc.append(j, [0, 1])
+        qc = QuantumCircuit(self.number_of_players)
+        qc.append(j, all_qbits)
         qc.barrier()
-        qc.append(u_a, [0])
-        qc.append(u_b, [1])
+
+        for qbit, strategy in enumerate(self.strategies):
+            u_a = Operator(strategy)
+            qc.append(u_a, [qbit])
+
         qc.barrier()
-        qc.append(j_h, [0, 1])
+        qc.append(j_h, all_qbits)
         qc.measure_all()
         return qc
 
