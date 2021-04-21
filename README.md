@@ -15,11 +15,12 @@ pip install ewl
 ```python
 from ewl import *
 
-ewl = ExtendedEWL(
-    psi=(ket('00') + i * ket('11')) / sqrt(2),  # initial state
-    alice=U(theta=pi/2, alpha=pi/2, beta=0),  # quantum strategy
-    bob=U(theta=0, alpha=0, beta=0)  # classical strategy
-)
+psi = (ket('00') + i * ket('11')) / sqrt(2)  # initial state
+
+alice = U(theta=pi/2, alpha=pi/2, beta=0)  # quantum strategy
+bob = U(theta=0, alpha=0, beta=0)  # classical strategy (C)
+
+ewl = ExtendedEWL(psi, [alice, bob])
 
 ewl.draw()
 
