@@ -1,6 +1,6 @@
 from cmath import sqrt, pi, sin, cos, exp
-from itertools import product
 from functools import cached_property, reduce
+from itertools import product
 from math import log2
 from typing import Optional, Sequence
 
