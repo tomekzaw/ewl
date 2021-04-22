@@ -6,11 +6,11 @@ from qiskit.quantum_info.operators import Operator
 from sympy import Matrix
 from sympy.physics.quantum.qubit import Qubit
 
-from ewl import U, ExtendedEWL
+from ewl import U, EWL
 
 
 @pytest.fixture
-def ewl() -> ExtendedEWL:
+def ewl() -> EWL:
     i = sp.I
     pi = sp.pi
     sqrt2 = sp.sqrt(2)
@@ -19,14 +19,14 @@ def ewl() -> ExtendedEWL:
     alice = U(theta=pi / 2, alpha=pi / 2, beta=0)
     bob = U(theta=0, alpha=0, beta=0)
 
-    return ExtendedEWL(psi, [alice, bob])
+    return EWL(psi, [alice, bob])
 
 
-def test_j(ewl: ExtendedEWL):
+def test_J(ewl: EWL):
     i = sp.I
     sqrt2 = sp.sqrt(2)
 
-    assert ewl.j == Matrix([
+    assert ewl.J == Matrix([
         [1 / sqrt2, 0, 0, -i / sqrt2],
         [0, i / sqrt2, -1 / sqrt2, 0],
         [0, -1 / sqrt2, i / sqrt2, 0],
@@ -34,11 +34,11 @@ def test_j(ewl: ExtendedEWL):
     ])
 
 
-def test_j_h(ewl: ExtendedEWL):
+def test_J_H(ewl: EWL):
     i = sp.I
     sqrt2 = sp.sqrt(2)
 
-    assert ewl.j_h == Matrix([
+    assert ewl.J_H == Matrix([
         [1 / sqrt2, 0, 0, -i / sqrt2],
         [0, -i / sqrt2, -1 / sqrt2, 0],
         [0, -1 / sqrt2, -i / sqrt2, 0],
@@ -46,7 +46,7 @@ def test_j_h(ewl: ExtendedEWL):
     ])
 
 
-def test_qc(ewl: ExtendedEWL):
+def test_qc(ewl: EWL):
     i = 1j
     sqrt2 = np.sqrt(2)
 

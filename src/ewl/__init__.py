@@ -16,7 +16,7 @@ from qiskit.tools import job_monitor
 from qiskit.visualization import plot_histogram  # noqa: F401
 from sympy import Matrix
 from sympy.physics.quantum import TensorProduct, Dagger
-from sympy.physics.quantum.qubit import qubit_to_matrix
+from sympy.physics.quantum.qubit import Qubit, qubit_to_matrix  # noqa: F401
 
 try:
     IBMQ.load_account()
@@ -67,7 +67,7 @@ def J(psi, C: Matrix, D: Matrix) -> Matrix:
     ])
 
 
-class ExtendedEWL:
+class EWL:
     def __init__(self, psi, strategies: Sequence[Matrix], provider: Optional[AccountProvider] = None):
         assert number_of_qubits(psi) == len(strategies)
 
@@ -87,19 +87,19 @@ class ExtendedEWL:
         return len(self.strategies)
 
     @cached_property
-    def j(self) -> Matrix:
+    def J(self) -> Matrix:
         C = U(theta=0, alpha=0, beta=0)
         D = U(theta=pi, alpha=0, beta=0)
         return J(self.psi, C, D)
 
     @cached_property
-    def j_h(self) -> Matrix:
-        return Dagger(self.j)
+    def J_H(self) -> Matrix:
+        return Dagger(self.J)
 
     @cached_property
     def qc(self) -> QuantumCircuit:
-        j = Operator(sympy_to_numpy_matrix(self.j))
-        j_h = Operator(sympy_to_numpy_matrix(self.j_h))
+        j = Operator(sympy_to_numpy_matrix(self.J))
+        j_h = Operator(sympy_to_numpy_matrix(self.J_H))
 
         all_qbits = list(range(self.number_of_players))
 
@@ -113,7 +113,6 @@ class ExtendedEWL:
         qc.barrier()
         qc.append(j_h, all_qbits)
         qc.measure_all()
-
         return qc
 
     def draw(self):
