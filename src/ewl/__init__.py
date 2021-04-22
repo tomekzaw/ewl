@@ -69,6 +69,8 @@ def J(psi, C: Matrix, D: Matrix) -> Matrix:
 
 class ExtendedEWL:
     def __init__(self, psi, strategies: Sequence[Matrix], provider: Optional[AccountProvider] = None):
+        assert number_of_qubits(psi) == len(strategies)
+
         self.psi = psi
         self.strategies = strategies
 
