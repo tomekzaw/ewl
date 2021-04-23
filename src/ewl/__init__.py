@@ -1,10 +1,11 @@
-from cmath import sqrt, pi, sin, cos, exp
-from functools import cached_property, reduce
+import cmath
+from functools import cached_property
 from itertools import product
 from math import log2
 from typing import Optional, Sequence
 
 import numpy as np
+import sympy as sp
 from qiskit import QuantumCircuit, execute, Aer, IBMQ
 from qiskit.compiler import transpile
 from qiskit.providers.ibmq import least_busy
@@ -13,51 +14,43 @@ from qiskit.providers.ibmq.exceptions import IBMQAccountCredentialsNotFound, IBM
 from qiskit.quantum_info.operators import Operator
 from qiskit.tools import job_monitor
 from qiskit.visualization import plot_histogram  # noqa: F401
+from sympy import Matrix
+from sympy.physics.quantum import TensorProduct, Dagger
+from sympy.physics.quantum.qubit import Qubit, qubit_to_matrix  # noqa: F401
 
 try:
     IBMQ.load_account()
 except IBMQAccountCredentialsNotFound:
     pass
 
-i = 1j
-sqrt2 = sqrt(2)
+i = sp.I
+pi = sp.pi
+sqrt2 = sp.sqrt(2)
 
 
-def ket(base_state: str, /) -> np.array:
-    qbits = len(base_state)
-    assert qbits > 0, 'Number of qbits must be at least 1'
-    assert set(base_state) <= {'0', '1'}, 'Base state must consist of only 0s and 1s'
-
-    vector = np.zeros(2 ** qbits)
-    vector[int(base_state, 2)] = 1
-    return vector
+def number_of_qubits(psi) -> int:
+    return int(log2(len(qubit_to_matrix(psi))))
 
 
-def is_unit_vector(vec: np.array) -> bool:
-    return np.isclose(np.linalg.norm(vec), 1)
+def sympy_to_numpy_matrix(matrix: Matrix) -> np.array:
+    return np.array(matrix).astype(complex)
 
 
-def number_of_qbits(psi: np.array) -> int:
-    n = psi.shape[0]
-    assert (n & (n - 1) == 0) and n != 0, 'Vector size must be a power of two'
-    return int(log2(n))
-
-
-def U_theta_alpha_beta(*, theta: complex, alpha: complex, beta: complex = 3 * pi / 2) -> np.array:
-    return np.array([
-        [exp(i * alpha) * cos(theta / 2), i * exp(i * beta) * sin(theta / 2)],
-        [i * exp(-i * beta) * sin(theta / 2), exp(-i * alpha) * cos(theta / 2)]
+def U_theta_alpha_beta(*, theta: complex, alpha: complex, beta: complex = 3 * cmath.pi / 2) -> Matrix:
+    return Matrix([
+        [sp.exp(i * alpha) * sp.cos(theta / 2), i * sp.exp(i * beta) * sp.sin(theta / 2)],
+        [i * sp.exp(-i * beta) * sp.sin(theta / 2), sp.exp(-i * alpha) * sp.cos(theta / 2)]
     ])
 
 
-def U_theta_phi_lambda(*, theta: complex, phi: complex, lambda_: complex) -> np.array:
-    return np.array([
-        [exp(-i * (phi + lambda_) / 2) * cos(theta / 2), -exp(-i * (phi - lambda_) / 2) * sin(theta / 2)],
-        [exp(i * (phi - lambda_) / 2) * sin(theta / 2), exp(i * (phi + lambda_) / 2) * cos(theta / 2)]
+def U_theta_phi_lambda(*, theta: complex, phi: complex, lambda_: complex) -> Matrix:
+    return Matrix([
+        [sp.exp(-i * (phi + lambda_) / 2) * sp.cos(theta / 2), -sp.exp(-i * (phi - lambda_) / 2) * sp.sin(theta / 2)],
+        [sp.exp(i * (phi - lambda_) / 2) * sp.sin(theta / 2), sp.exp(i * (phi + lambda_) / 2) * sp.cos(theta / 2)]
     ])
 
 
-def U(*args, **kwargs: complex) -> np.array:
+def U(*args, **kwargs: complex) -> Matrix:
     if args:
         raise Exception('Please use keyword arguments')
     if set(kwargs) in [{'theta', 'alpha'}, {'theta', 'alpha', 'beta'}]:
@@ -67,17 +60,16 @@ def U(*args, **kwargs: complex) -> np.array:
     raise Exception('Invalid parametrization')
 
 
-def J(psi: np.array, C: np.array, D: np.array) -> np.array:
-    return np.column_stack([
-        np.dot(reduce(np.kron, base), psi)
-        for base in product((C, D), repeat=number_of_qbits(psi))
+def J(psi, C: Matrix, D: Matrix) -> Matrix:
+    return Matrix.hstack(*[
+        TensorProduct(*base) @ qubit_to_matrix(psi)
+        for base in product((C, D), repeat=number_of_qubits(psi))
     ])
 
 
-class ExtendedEWL:
-    def __init__(self, psi: np.array, strategies: Sequence[np.array], provider: Optional[AccountProvider] = None):
-        assert is_unit_vector(psi), 'Initial state must be a unit vector'
-        assert len(strategies) == number_of_qbits(psi), 'Number of strategies must be equal to number of qbits'
+class EWL:
+    def __init__(self, psi, strategies: Sequence[Matrix], provider: Optional[AccountProvider] = None):
+        assert number_of_qubits(psi) == len(strategies)
 
         self.psi = psi
         self.strategies = strategies
@@ -95,15 +87,20 @@ class ExtendedEWL:
         return len(self.strategies)
 
     @cached_property
-    def j(self) -> np.array:
+    def J(self) -> Matrix:
         C = U(theta=0, alpha=0, beta=0)
         D = U(theta=pi, alpha=0, beta=0)
         return J(self.psi, C, D)
 
     @cached_property
+    def J_H(self) -> Matrix:
+        return Dagger(self.J)
+
+    @cached_property
     def qc(self) -> QuantumCircuit:
-        j = Operator(self.j)
-        j_h = Operator(np.conjugate(self.j).T)
+        j = Operator(sympy_to_numpy_matrix(self.J))
+        j_h = Operator(sympy_to_numpy_matrix(self.J_H))
+
         all_qbits = list(range(self.number_of_players))
 
         qc = QuantumCircuit(self.number_of_players)
@@ -111,8 +108,7 @@ class ExtendedEWL:
         qc.barrier()
 
         for qbit, strategy in enumerate(self.strategies):
-            u_a = Operator(strategy)
-            qc.append(u_a, [qbit])
+            qc.append(Operator(sympy_to_numpy_matrix(strategy)), [qbit])
 
         qc.barrier()
         qc.append(j_h, all_qbits)

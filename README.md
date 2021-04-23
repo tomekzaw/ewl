@@ -2,7 +2,7 @@
 
 A simple Python library to simulate and execute EWL quantum circuits on IBM Q.
 
-![](docs/ewl.png)
+![](https://raw.githubusercontent.com/tomekzaw/ewl/master/docs/ewl.png)
 
 ## Installation
 
@@ -15,12 +15,16 @@ pip install ewl
 ```python
 from ewl import *
 
-psi = (ket('00') + i * ket('11')) / sqrt(2)  # initial state
+psi = (Qubit('00') + i * Qubit('11')) / sqrt2  # initial state
 
-alice = U(theta=pi/2, alpha=pi/2, beta=0)  # quantum strategy
+alice = U(theta=pi / 2, alpha=pi / 2, beta=0)  # quantum strategy
 bob = U(theta=0, alpha=0, beta=0)  # classical strategy (C)
 
-ewl = ExtendedEWL(psi, [alice, bob])
+ewl = EWL(psi, [alice, bob])
+
+ewl.J
+
+ewl.J_H
 
 ewl.draw()
 
