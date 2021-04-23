@@ -30,7 +30,9 @@ ewl.draw()
 
 ewl.draw_transpiled(backend_name='ibmq_athens', optimization_level=3)
 
-ewl.simulate()
+ewl.simulate_probs(backend_name='statevector_simulator')
+
+ewl.simulate_counts(backend_name='qasm_simulator')
 
 ewl.run(backend_name='ibmq_athens', optimization_level=3)
 ```
