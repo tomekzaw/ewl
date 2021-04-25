@@ -134,3 +134,7 @@ def test_ewl_qc(ewl: EWL):
     qc.measure_all()
 
     assert ewl.qc == qc
+
+
+def test_calculate_probs(ewl: EWL):
+    assert ewl.calculate_probs() == Matrix([0, 0, 1/2, 1/2])
