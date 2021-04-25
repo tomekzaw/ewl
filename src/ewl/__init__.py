@@ -129,6 +129,10 @@ class EWL:
         transpiled_qc = transpile(self.qc, backend, optimization_level=optimization_level)
         return transpiled_qc.draw('mpl')
 
+    def calculate_probs(self) -> Matrix:
+        phi = self.J_H @ TensorProduct(*self.strategies) @ qubit_to_matrix(self.psi)
+        return phi.multiply_elementwise(phi.conjugate())
+
     def simulate_probs(self, backend_name: str = 'statevector_simulator') -> Dict[str, float]:
         circ = self.make_qc(measure=False)
         simulator = Aer.get_backend(backend_name)
