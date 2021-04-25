@@ -2,7 +2,7 @@ import cmath
 from functools import cached_property
 from itertools import product
 from math import log2
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Dict
 
 import numpy as np
 import sympy as sp
@@ -96,12 +96,11 @@ class EWL:
     def J_H(self) -> Matrix:
         return Dagger(self.J)
 
-    @cached_property
-    def qc(self) -> QuantumCircuit:
+    def make_qc(self, *, measure: bool = True) -> QuantumCircuit:
         j = Operator(sympy_to_numpy_matrix(self.J))
         j_h = Operator(sympy_to_numpy_matrix(self.J_H))
 
-        all_qbits = list(range(self.number_of_players))
+        all_qbits = range(self.number_of_players)
 
         qc = QuantumCircuit(self.number_of_players)
         qc.append(j, all_qbits)
@@ -112,34 +111,42 @@ class EWL:
 
         qc.barrier()
         qc.append(j_h, all_qbits)
-        qc.measure_all()
+
+        if measure:
+            qc.measure_all()
+
         return qc
+
+    @cached_property
+    def qc(self) -> QuantumCircuit:
+        return self.make_qc(measure=True)
 
     def draw(self):
         return self.qc.draw('mpl')
 
     def draw_transpiled(self, backend_name: str, *, optimization_level: int = 3):
         backend = self.provider.get_backend(backend_name)
-        transpiled_circ = transpile(self.qc, backend, optimization_level=optimization_level)
-        return transpiled_circ.draw('mpl')
+        transpiled_qc = transpile(self.qc, backend, optimization_level=optimization_level)
+        return transpiled_qc.draw('mpl')
 
-    def simulate(self, backend_name: str = 'qasm_simulator'):
+    def simulate_probs(self, backend_name: str = 'statevector_simulator') -> Dict[str, float]:
+        circ = self.make_qc(measure=False)
         simulator = Aer.get_backend(backend_name)
-        result = execute(self.qc, simulator).result()
-        counts_simulated = result.get_counts(self.qc)
-        return counts_simulated
+        return execute(circ, simulator).result().get_counts()
 
-    def run(self, backend_name: str = 'least_busy', *, optimization_level: int = 3):
+    def simulate_counts(self, backend_name: str = 'qasm_simulator') -> Dict[str, int]:
+        simulator = Aer.get_backend(backend_name)
+        return execute(self.qc, simulator).result().get_counts()
+
+    def run(self, backend_name: str = 'least_busy', *, optimization_level: int = 3) -> Dict[str, int]:
         if backend_name == 'least_busy':
-            small_devices = self.provider.backends(filters=lambda x: 2 <= x.configuration().n_qubits <= 5
-                                                                     and not x.configuration().simulator  # noqa: E127, W503
-                                                                     and x.status().operational)  # noqa: E127, W503
+            small_devices = self.provider.backends(
+                filters=lambda x: x.configuration().n_qubits >= self.number_of_players
+                                  and not x.configuration().simulator and x.status().operational)  # noqa: W503, E131
             backend = least_busy(small_devices)
         else:
-            backend = self.provider._backends[backend_name]  # TODO: improve
+            backend = self.provider.get_backend(backend_name)
 
         job = execute(self.qc, backend, optimization_level=optimization_level)
         job_monitor(job)
-        results = job.result()
-        counts_quantum = results.get_counts()
-        return counts_quantum
+        return job.result().get_counts()
