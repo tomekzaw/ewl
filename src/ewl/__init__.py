@@ -2,7 +2,7 @@ import cmath
 from functools import cached_property
 from itertools import product
 from math import log2
-from typing import Optional, Sequence, Dict
+from typing import Sequence, Dict
 
 import numpy as np
 import sympy as sp
