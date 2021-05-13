@@ -2,7 +2,7 @@ import cmath
 from functools import cached_property
 from itertools import product
 from math import log2
-from typing import Optional, Sequence, Dict
+from typing import Sequence, Dict
 
 import numpy as np
 import sympy as sp
@@ -68,19 +68,18 @@ def J(psi, C: Matrix, D: Matrix) -> Matrix:
 
 
 class EWL:
-    def __init__(self, psi, strategies: Sequence[Matrix], provider: Optional[AccountProvider] = None):
+    def __init__(self, psi, strategies: Sequence[Matrix]):
         assert number_of_qubits(psi) == len(strategies)
 
         self.psi = psi
         self.strategies = strategies
 
-        if provider is None:
-            try:
-                self.provider = IBMQ.get_provider()
-            except IBMQProviderError:
-                raise RuntimeError('Please run this notebook on https://quantum-computing.ibm.com/lab')
-        else:
-            self.provider = provider
+    @cached_property
+    def provider(self) -> AccountProvider:
+        try:
+            return IBMQ.get_provider()
+        except IBMQProviderError:
+            raise RuntimeError('Please run this notebook on https://quantum-computing.ibm.com/lab')
 
     @cached_property
     def number_of_players(self) -> int:
