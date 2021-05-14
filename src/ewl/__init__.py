@@ -1,11 +1,12 @@
-import cmath
+import warnings
 from functools import cached_property
 from itertools import product
 from math import log2
-from typing import Sequence, Dict
+from typing import Sequence, Dict, Set
 
 import numpy as np
 import sympy as sp
+from matplotlib import MatplotlibDeprecationWarning
 from qiskit import QuantumCircuit, execute, Aer, IBMQ
 from qiskit.compiler import transpile
 from qiskit.providers.ibmq import least_busy
@@ -14,9 +15,13 @@ from qiskit.providers.ibmq.exceptions import IBMQAccountCredentialsNotFound, IBM
 from qiskit.quantum_info.operators import Operator
 from qiskit.tools import job_monitor
 from qiskit.visualization import plot_histogram  # noqa: F401
-from sympy import Matrix
-from sympy.physics.quantum import TensorProduct, Dagger
+from sympy import init_printing, Matrix
+from sympy.physics.quantum import TensorProduct
 from sympy.physics.quantum.qubit import Qubit, qubit_to_matrix  # noqa: F401
+
+init_printing()
+
+warnings.simplefilter('ignore', category=MatplotlibDeprecationWarning)
 
 try:
     IBMQ.load_account()
@@ -32,25 +37,33 @@ def number_of_qubits(psi) -> int:
     return int(log2(len(qubit_to_matrix(psi))))
 
 
+def convert_exp_to_trig(expr):
+    return expr.rewrite(sp.sin).simplify()
+
+
+def amplitude_to_prob(expr):
+    return sp.Abs(expr) ** 2
+
+
 def sympy_to_numpy_matrix(matrix: Matrix) -> np.array:
     return np.array(matrix).astype(complex)
 
 
-def U_theta_alpha_beta(*, theta: complex, alpha: complex, beta: complex = 3 * cmath.pi / 2) -> Matrix:
+def U_theta_alpha_beta(*, theta, alpha, beta=3 * sp.pi / 2) -> Matrix:
     return Matrix([
         [sp.exp(i * alpha) * sp.cos(theta / 2), i * sp.exp(i * beta) * sp.sin(theta / 2)],
         [i * sp.exp(-i * beta) * sp.sin(theta / 2), sp.exp(-i * alpha) * sp.cos(theta / 2)]
     ])
 
 
-def U_theta_phi_lambda(*, theta: complex, phi: complex, lambda_: complex) -> Matrix:
+def U_theta_phi_lambda(*, theta, phi, lambda_) -> Matrix:
     return Matrix([
         [sp.exp(-i * (phi + lambda_) / 2) * sp.cos(theta / 2), -sp.exp(-i * (phi - lambda_) / 2) * sp.sin(theta / 2)],
         [sp.exp(i * (phi - lambda_) / 2) * sp.sin(theta / 2), sp.exp(i * (phi + lambda_) / 2) * sp.cos(theta / 2)]
     ])
 
 
-def U(*args, **kwargs: complex) -> Matrix:
+def U(*args, **kwargs) -> Matrix:
     if args:
         raise Exception('Please use keyword arguments')
     if set(kwargs) in [{'theta', 'alpha'}, {'theta', 'alpha', 'beta'}]:
@@ -75,13 +88,6 @@ class EWL:
         self.strategies = strategies
 
     @cached_property
-    def provider(self) -> AccountProvider:
-        try:
-            return IBMQ.get_provider()
-        except IBMQProviderError:
-            raise RuntimeError('Please run this notebook on https://quantum-computing.ibm.com/lab')
-
-    @cached_property
     def number_of_players(self) -> int:
         return len(self.strategies)
 
@@ -93,9 +99,41 @@ class EWL:
 
     @cached_property
     def J_H(self) -> Matrix:
-        return Dagger(self.J)
+        return self.J.H
+
+    @cached_property
+    def amplitudes(self) -> Matrix:
+        return (self.J_H @ TensorProduct(*self.strategies) @ qubit_to_matrix(self.psi)).applyfunc(convert_exp_to_trig)
+
+    @cached_property
+    def probs(self) -> Matrix:
+        return self.amplitudes.applyfunc(amplitude_to_prob)
+
+    @cached_property
+    def params(self) -> Set[sp.Symbol]:
+        return self.psi.atoms(sp.Symbol).union(*(
+            strategy.atoms(sp.Symbol)
+            for strategy in self.strategies
+        ))
+
+    def fix(self, **kwargs):
+        params = {sp.Symbol(k): v for k, v in kwargs.items()}
+        psi = self.psi.subs(params)
+        strategies = [strategy.subs(params) for strategy in self.strategies]
+        return type(self)(psi, strategies)
+
+    @cached_property
+    def provider(self) -> AccountProvider:
+        try:
+            return IBMQ.get_provider()
+        except IBMQProviderError:
+            raise RuntimeError('Please run this notebook on https://quantum-computing.ibm.com/lab '
+                               'or save account token using IBMQ.save_account function')
 
     def make_qc(self, *, measure: bool = True) -> QuantumCircuit:
+        if self.params:
+            raise Exception('Please provide values for the following parameters: ' + ', '.join(map(str, self.params)))
+
         j = Operator(sympy_to_numpy_matrix(self.J))
         j_h = Operator(sympy_to_numpy_matrix(self.J_H))
 
@@ -127,10 +165,6 @@ class EWL:
         backend = self.provider.get_backend(backend_name)
         transpiled_qc = transpile(self.qc, backend, optimization_level=optimization_level)
         return transpiled_qc.draw('mpl')
-
-    def calculate_probs(self) -> Matrix:
-        phi = self.J_H @ TensorProduct(*self.strategies) @ qubit_to_matrix(self.psi)
-        return phi.multiply_elementwise(phi.conjugate())
 
     def simulate_probs(self, backend_name: str = 'statevector_simulator') -> Dict[str, float]:
         circ = self.make_qc(measure=False)
