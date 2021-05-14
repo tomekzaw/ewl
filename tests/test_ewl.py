@@ -30,15 +30,16 @@ def test_sympy_to_numpy_matrix():
     (dict(theta=0, alpha=0, beta=pi / 2), Matrix([[1, 0], [0, 1]])),
     (dict(theta=pi / 2, alpha=pi / 2, beta=0), Matrix([[i / sqrt2, i / sqrt2], [i / sqrt2, -i / sqrt2]])),
     (dict(theta=0, alpha=pi / 2), Matrix([[i, 0], [0, -i]])),
-    (dict(theta=0, alpha=0, beta=0), Matrix([[1, 0], [0, 1]])),  # C
-    (dict(theta=pi, alpha=0, beta=0), Matrix([[0, i], [i, 0]])),  # D
+    (dict(theta=0, alpha=0, beta=0), Matrix([[1, 0], [0, 1]])),
+    (dict(theta=pi, alpha=0, beta=0), Matrix([[0, i], [i, 0]])),
 ])
 def test_U_theta_alpha(kwargs: Dict[str, complex], expected: Matrix):
     assert U_theta_alpha_beta(**kwargs) == expected
 
 
 @pytest.mark.parametrize('kwargs, expected', [
-    (dict(theta=pi, phi=0, lambda_=0), Matrix([[0, -1], [1, 0]])),
+    (dict(theta=0, phi=0, lambda_=0), Matrix([[1, 0], [0, 1]])),  # C
+    (dict(theta=pi, phi=0, lambda_=0), Matrix([[0, -1], [1, 0]])),  # D
 ])
 def test_U_theta_phi_lambda(kwargs: Dict[str, complex], expected: Matrix):
     assert U_theta_phi_lambda(**kwargs) == expected
