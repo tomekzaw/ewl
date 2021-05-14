@@ -122,7 +122,7 @@ class EWL:
         ))
 
     # TODO: @cache
-    def payoff_function(self, player: Optional[int] = None):
+    def payoff_function(self, player: Optional[int]):
         payoff_matrix = self.payoff_matrix[player] if player is not None else reduce(add, self.payoff_matrix)
         return sum(
             self.probs[i] * payoff_matrix[idx]
@@ -131,10 +131,9 @@ class EWL:
 
     def fix(self, **kwargs):
         params = {sp.Symbol(k): v for k, v in kwargs.items()}
-        substitute = lambda expr: expr.subs(params)
-        psi = substitute(self.psi)
-        strategies = list(map(substitute, self.strategies))
-        payoff_matrix = substitute(self.payoff_matrix) if self.payoff_matrix is not None else None
+        psi = self.psi.subs(params)
+        strategies = [strategy.subs(params) for strategy in self.strategies]
+        payoff_matrix = self.payoff_matrix.subs(params) if self.payoff_matrix is not None else None
         return type(self)(psi, strategies, payoff_matrix)
 
     @cached_property
