@@ -1,5 +1,5 @@
 import warnings
-from functools import cached_property, reduce, cache
+from functools import cached_property, reduce
 from itertools import product
 from math import log2
 from operator import add
