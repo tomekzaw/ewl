@@ -1,8 +1,9 @@
 import warnings
-from functools import cached_property
+from functools import cached_property, reduce, cache
 from itertools import product
 from math import log2
-from typing import Sequence, Dict, Set
+from operator import add
+from typing import Sequence, Dict, Set, Optional
 
 import numpy as np
 import sympy as sp
@@ -15,7 +16,7 @@ from qiskit.providers.ibmq.exceptions import IBMQAccountCredentialsNotFound, IBM
 from qiskit.quantum_info.operators import Operator
 from qiskit.tools import job_monitor
 from qiskit.visualization import plot_histogram  # noqa: F401
-from sympy import init_printing, Matrix
+from sympy import init_printing, Matrix, Array
 from sympy.physics.quantum import TensorProduct
 from sympy.physics.quantum.qubit import Qubit, qubit_to_matrix  # noqa: F401
 
@@ -81,11 +82,15 @@ def J(psi, C: Matrix, D: Matrix) -> Matrix:
 
 
 class EWL:
-    def __init__(self, psi, strategies: Sequence[Matrix]):
-        assert number_of_qubits(psi) == len(strategies)
+    def __init__(self, psi, strategies: Sequence[Matrix], payoff_matrix: Optional[Array] = None):
+        assert number_of_qubits(psi) == len(strategies), 'Number of qubits and strategies must be equal'
+
+        if payoff_matrix is not None:
+            assert payoff_matrix.rank() == len(strategies) + 1, 'Invalid number of dimensions of payoff matrix'
 
         self.psi = psi
         self.strategies = strategies
+        self.payoff_matrix = payoff_matrix
 
     @cached_property
     def number_of_players(self) -> int:
@@ -116,11 +121,21 @@ class EWL:
             for strategy in self.strategies
         ))
 
+    # TODO: @cache
+    def payoff_function(self, player: Optional[int] = None):
+        payoff_matrix = self.payoff_matrix[player] if player is not None else reduce(add, self.payoff_matrix)
+        return sum(
+            self.probs[i] * payoff_matrix[idx]
+            for i, idx in enumerate(product(range(2), repeat=self.number_of_players))
+        )
+
     def fix(self, **kwargs):
         params = {sp.Symbol(k): v for k, v in kwargs.items()}
-        psi = self.psi.subs(params)
-        strategies = [strategy.subs(params) for strategy in self.strategies]
-        return type(self)(psi, strategies)
+        substitute = lambda expr: expr.subs(params)
+        psi = substitute(self.psi)
+        strategies = list(map(substitute, self.strategies))
+        payoff_matrix = substitute(self.payoff_matrix) if self.payoff_matrix is not None else None
+        return type(self)(psi, strategies, payoff_matrix)
 
     @cached_property
     def provider(self) -> AccountProvider:
