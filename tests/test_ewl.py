@@ -195,16 +195,16 @@ def test_probs_parametrized(ewl_parametrized_01_10: EWL):
 
     probs = ewl_parametrized_01_10.probs(simplify=True)
 
-    assert probs[0] == abs(cos(alpha1 - alpha2) * cos(theta1 / 2) * cos(theta2 / 2) +
+    assert probs[0] == abs(cos(alpha1 - alpha2) * cos(theta1 / 2) * cos(theta2 / 2) +  # noqa: W504
                            sin(beta1 - beta2) * sin(theta1 / 2) * sin(theta2 / 2)) ** 2
 
-    assert probs[1] == abs(-sin(alpha2 + beta1) * sin(theta1 / 2) * cos(theta2 / 2) +
+    assert probs[1] == abs(-sin(alpha2 + beta1) * sin(theta1 / 2) * cos(theta2 / 2) +  # noqa: W504
                            cos(alpha1 + beta2) * cos(theta1 / 2) * sin(theta2 / 2)) ** 2
 
-    assert probs[2] == abs(cos(alpha2 + beta1) * sin(theta1 / 2) * cos(theta2 / 2) +
+    assert probs[2] == abs(cos(alpha2 + beta1) * sin(theta1 / 2) * cos(theta2 / 2) +  # noqa: W504
                            sin(alpha1 + beta2) * cos(theta1 / 2) * sin(theta2 / 2)) ** 2
 
-    assert probs[3] == abs(-sin(alpha1 - alpha2) * cos(theta1 / 2) * cos(theta2 / 2) +
+    assert probs[3] == abs(-sin(alpha1 - alpha2) * cos(theta1 / 2) * cos(theta2 / 2) +  # noqa: W504
                            cos(beta1 - beta2) * sin(theta1 / 2) * sin(theta2 / 2)) ** 2
 
 
