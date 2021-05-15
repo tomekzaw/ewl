@@ -69,13 +69,19 @@ def test_J():
 
 @pytest.fixture
 def ewl() -> EWL:
-    i = sp.I
-    pi = sp.pi
-    sqrt2 = sp.sqrt(2)
-
     psi = (Qubit('00') + i * Qubit('11')) / sqrt2
     alice = U(theta=pi / 2, alpha=pi / 2, beta=0)
     bob = U(theta=0, alpha=0, beta=0)
+
+    return EWL(psi, [alice, bob])
+
+
+@pytest.fixture
+def ewl_parametrized() -> EWL:
+    psi = (Qubit('00') + i * Qubit('11')) / sqrt2
+    theta1, alpha1, beta1, theta2, alpha2, beta2 = sp.symbols('theta1 alpha1 beta1 theta2 alpha2 beta2')
+    alice = U(theta=theta1, alpha=alpha1, beta=beta1)
+    bob = U(theta=theta2, alpha=alpha2, beta=beta2)
 
     return EWL(psi, [alice, bob])
 
@@ -144,5 +150,50 @@ def test_ewl_qc(ewl: EWL):
     assert ewl.qc == qc
 
 
+def test_ewl_parametrized_qc(ewl_parametrized: EWL):
+    with pytest.raises(Exception):
+        ewl_parametrized.qc
+
+
 def test_calculate_probs(ewl: EWL):
     assert ewl.probs() == Matrix([0, 0, 1 / 2, 1 / 2])
+
+
+def test_amplitudes_parametrized(ewl_parametrized: EWL):
+    theta1, alpha1, beta1, theta2, alpha2, beta2 = sp.symbols('theta1 alpha1 beta1 theta2 alpha2 beta2')
+    sin, cos = sp.sin, sp.cos
+
+    amplitudes = ewl_parametrized.amplitudes(simplify=True)
+
+    assert amplitudes[0] == \
+           cos(alpha1 + alpha2) * cos(theta1 / 2) * cos(theta2 / 2) + \
+           sin(beta1 + beta2) * sin(theta1 / 2) * sin(theta2 / 2)
+
+    assert amplitudes[1] == \
+           sin(alpha2 - beta1) * sin(theta1 / 2) * cos(theta2 / 2) + \
+           cos(alpha1 - beta2) * cos(theta1 / 2) * sin(theta2 / 2)
+
+    assert amplitudes[2] == \
+           cos(alpha2 - beta1) * sin(theta1 / 2) * cos(theta2 / 2) + \
+           sin(alpha1 - beta2) * cos(theta1 / 2) * sin(theta2 / 2)
+
+    assert amplitudes[3] == \
+           -sin(alpha1 + alpha2) * cos(theta1 / 2) * cos(theta2 / 2) + \
+           cos(beta1 + beta2) * sin(theta1 / 2) * sin(theta2 / 2)
+
+
+def test_params_fixed(ewl: EWL):
+    assert ewl.params == set()
+
+
+def test_params_parametrized(ewl_parametrized: EWL):
+    assert ewl_parametrized.params == set(sp.symbols('theta1 alpha1 beta1 theta2 alpha2 beta2'))
+
+
+def test_fix(ewl: EWL, ewl_parametrized: EWL):
+    ewl_fixed = ewl_parametrized.fix(theta1=pi / 2, alpha1=pi / 2, beta1=0,
+                                     theta2=0, alpha2=0, beta2=0)
+
+    assert ewl_fixed.J == ewl.J
+    assert ewl_fixed.strategies[0] == ewl.strategies[0]
+    assert ewl_fixed.strategies[1] == ewl.strategies[1]
