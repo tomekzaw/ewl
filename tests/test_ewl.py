@@ -220,6 +220,6 @@ def test_fix(ewl: EWL, ewl_parametrized: EWL):
     ewl_fixed = ewl_parametrized.fix(theta1=pi / 2, alpha1=pi / 2, beta1=0,
                                      theta2=0, alpha2=0, beta2=0)
 
-    assert ewl_fixed.J == ewl.J
+    assert ewl_fixed.psi == ewl.psi
     assert ewl_fixed.strategies[0] == ewl.strategies[0]
     assert ewl_fixed.strategies[1] == ewl.strategies[1]
