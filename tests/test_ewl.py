@@ -8,8 +8,8 @@ from qiskit.quantum_info.operators import Operator
 from sympy import Matrix
 from sympy.physics.quantum.qubit import Qubit
 
-from ewl import U, EWL
-from ewl import i, pi, sqrt2, number_of_qubits, sympy_to_numpy_matrix, U_theta_alpha_beta, U_theta_phi_lambda, J
+from ewl import i, pi, sqrt2, number_of_qubits, sympy_to_numpy_matrix, \
+    U_theta_alpha_beta, U_theta_phi_lambda, U_theta_phi, J, U, EWL
 
 
 @pytest.mark.parametrize('psi, expected', [
@@ -43,6 +43,13 @@ def test_U_theta_alpha(kwargs: Dict[str, complex], expected: Matrix):
 ])
 def test_U_theta_phi_lambda(kwargs: Dict[str, complex], expected: Matrix):
     assert U_theta_phi_lambda(**kwargs) == expected
+
+
+@pytest.mark.parametrize('kwargs, expected', [
+    (dict(theta=0, phi=pi / 2), Matrix([[i, 0], [0, -i]]))
+])
+def test_U_theta_phi(kwargs: Dict[str, complex], expected: Matrix):
+    assert U_theta_phi(**kwargs) == expected
 
 
 def test_J():

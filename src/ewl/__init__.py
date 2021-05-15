@@ -71,6 +71,14 @@ def U_theta_phi_lambda(*, theta, phi, lambda_) -> Matrix:
     ])
 
 
+def U_theta_phi(*, theta, phi) -> Matrix:
+    # original parametrization from "Quantum Games and Quantum Strategies" by J. Eisert, M. Wilkens, M. Lewenstein
+    return Matrix([
+        [sp.exp(i * phi) * sp.cos(theta / 2), sp.sin(theta / 2)],
+        [-sp.sin(theta / 2), sp.exp(-i * phi) * sp.cos(theta / 2)]
+    ])
+
+
 def U(*args, **kwargs) -> Matrix:
     if args:
         raise Exception('Please use keyword arguments')
@@ -78,6 +86,8 @@ def U(*args, **kwargs) -> Matrix:
         return U_theta_alpha_beta(**kwargs)
     if set(kwargs) == {'theta', 'phi', 'lambda_'}:
         return U_theta_phi_lambda(**kwargs)
+    if set(kwargs) == {'theta', 'phi'}:
+        return U_theta_phi(**kwargs)
     raise Exception('Invalid parametrization')
 
 
