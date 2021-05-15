@@ -1,5 +1,5 @@
 import warnings
-from functools import cached_property, reduce
+from functools import cached_property, reduce, cache
 from itertools import product
 from math import log2
 from operator import add
@@ -87,6 +87,7 @@ class EWL:
 
         if payoff_matrix is not None:
             assert payoff_matrix.rank() == len(strategies) + 1, 'Invalid number of dimensions of payoff matrix'
+            assert payoff_matrix.shape == (len(strategies),) + (2,) * len(strategies), 'Invalid shape of payoff matrix'
 
         self.psi = psi
         self.strategies = strategies
@@ -106,13 +107,28 @@ class EWL:
     def J_H(self) -> Matrix:
         return self.J.H
 
-    @cached_property
-    def amplitudes(self) -> Matrix:
-        return (self.J_H @ TensorProduct(*self.strategies) @ qubit_to_matrix(self.psi)).applyfunc(convert_exp_to_trig)
+    @cache
+    def amplitudes(self, *, simplify: bool = False) -> Matrix:
+        ampl = self.J_H @ TensorProduct(*self.strategies) @ qubit_to_matrix(self.psi)
+        if simplify:
+            ampl = ampl.applyfunc(convert_exp_to_trig)
+        return ampl
 
-    @cached_property
-    def probs(self) -> Matrix:
-        return self.amplitudes.applyfunc(amplitude_to_prob)
+    @cache
+    def probs(self, *, simplify: bool = False) -> Matrix:
+        return self.amplitudes(simplify=simplify).applyfunc(amplitude_to_prob)
+
+    @cache
+    def payoff_function(self, *, player: Optional[int], simplify: bool = False):
+        if player is not None:
+            assert player < self.number_of_players, 'Invalid number of player'
+
+        probs = self.probs(simplify=simplify)
+        payoff_matrix = self.payoff_matrix[player] if player is not None else reduce(add, self.payoff_matrix)
+        return sum(
+            probs[i] * payoff_matrix[idx]
+            for i, idx in enumerate(product(range(2), repeat=self.number_of_players))
+        )
 
     @cached_property
     def params(self) -> Set[sp.Symbol]:
@@ -120,14 +136,6 @@ class EWL:
             strategy.atoms(sp.Symbol)
             for strategy in self.strategies
         ))
-
-    # TODO: @cache
-    def payoff_function(self, player: Optional[int]):
-        payoff_matrix = self.payoff_matrix[player] if player is not None else reduce(add, self.payoff_matrix)
-        return sum(
-            self.probs[i] * payoff_matrix[idx]
-            for i, idx in enumerate(product(range(2), repeat=self.number_of_players))
-        )
 
     def fix(self, **kwargs):
         params = {sp.Symbol(k): v for k, v in kwargs.items()}
