@@ -125,18 +125,18 @@ class EWL:
         return self.J.H
 
     @cache
-    def amplitudes(self, *, simplify: bool = False) -> Matrix:
+    def amplitudes(self, *, simplify: bool = True) -> Matrix:
         ampl = self.J_H @ TensorProduct(*self.strategies) @ qubit_to_matrix(self.psi)
         if simplify:
             ampl = ampl.applyfunc(convert_exp_to_trig)
         return ampl
 
     @cache
-    def probs(self, *, simplify: bool = False) -> Matrix:
+    def probs(self, *, simplify: bool = True) -> Matrix:
         return self.amplitudes(simplify=simplify).applyfunc(amplitude_to_prob)
 
     @cache
-    def payoff_function(self, *, player: Optional[int], simplify: bool = False):
+    def payoff_function(self, *, player: Optional[int], simplify: bool = True):
         if player is not None:
             assert player < self.number_of_players, 'Invalid number of player'
 
