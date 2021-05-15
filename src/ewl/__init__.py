@@ -5,6 +5,7 @@ from math import log2
 from operator import add
 from typing import Sequence, Dict, Set, Optional
 
+import matplotlib.pyplot as plt
 import numpy as np
 import sympy as sp
 from matplotlib import MatplotlibDeprecationWarning
@@ -129,6 +130,24 @@ class EWL:
             probs[i] * payoff_matrix[idx]
             for i, idx in enumerate(product(range(2), repeat=self.number_of_players))
         )
+
+    def plot_payoff_function(self, *, player: Optional[int],
+                             x: sp.Symbol, x_min, x_max, y: sp.Symbol, y_min, y_max, n: int = 20,
+                             figsize=(8, 8), cmap=plt.cm.coolwarm, **kwargs) -> plt.Figure:
+        f = sp.lambdify([x, y], self.payoff_function(player=player))
+
+        xs = np.linspace(x_min, x_max, n)
+        ys = np.linspace(y_min, y_max, n)
+        X, Y = np.meshgrid(xs, ys)
+        Z = f(X, Y)
+
+        fig = plt.figure(figsize=figsize)
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot_surface(X, Y, Z, cmap=cmap, antialiased=True)
+        ax.set(xlim=(x_min, x_max), ylim=(y_min, y_max),
+               xlabel=f'${sp.latex(x)}$', ylabel=f'${sp.latex(y)}$',
+               zlabel='expected payoff', **kwargs)
+        return fig
 
     @cached_property
     def params(self) -> Set[sp.Symbol]:
