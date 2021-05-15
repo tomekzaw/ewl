@@ -72,7 +72,6 @@ def ewl() -> EWL:
     psi = (Qubit('00') + i * Qubit('11')) / sqrt2
     alice = U(theta=pi / 2, alpha=pi / 2, beta=0)
     bob = U(theta=0, alpha=0, beta=0)
-
     return EWL(psi, [alice, bob])
 
 
@@ -82,7 +81,15 @@ def ewl_parametrized() -> EWL:
     theta1, alpha1, beta1, theta2, alpha2, beta2 = sp.symbols('theta1 alpha1 beta1 theta2 alpha2 beta2')
     alice = U(theta=theta1, alpha=alpha1, beta=beta1)
     bob = U(theta=theta2, alpha=alpha2, beta=beta2)
+    return EWL(psi, [alice, bob])
 
+
+@pytest.fixture
+def ewl_parametrized_01_10() -> EWL:
+    psi = (Qubit('01') + i * Qubit('10')) / sqrt2
+    theta1, alpha1, beta1, theta2, alpha2, beta2 = sp.symbols('theta1 alpha1 beta1 theta2 alpha2 beta2')
+    alice = U(theta=theta1, alpha=alpha1, beta=beta1)
+    bob = U(theta=theta2, alpha=alpha2, beta=beta2)
     return EWL(psi, [alice, bob])
 
 
@@ -180,6 +187,25 @@ def test_amplitudes_parametrized(ewl_parametrized: EWL):
     assert amplitudes[3] == \
            -sin(alpha1 + alpha2) * cos(theta1 / 2) * cos(theta2 / 2) + \
            cos(beta1 + beta2) * sin(theta1 / 2) * sin(theta2 / 2)
+
+
+def test_probs_parametrized(ewl_parametrized_01_10: EWL):
+    theta1, alpha1, beta1, theta2, alpha2, beta2 = sp.symbols('theta1 alpha1 beta1 theta2 alpha2 beta2')
+    sin, cos, abs = sp.sin, sp.cos, sp.Abs
+
+    probs = ewl_parametrized_01_10.probs(simplify=True)
+
+    assert probs[0] == abs(cos(alpha1 - alpha2) * cos(theta1 / 2) * cos(theta2 / 2) +
+                           sin(beta1 - beta2) * sin(theta1 / 2) * sin(theta2 / 2)) ** 2
+
+    assert probs[1] == abs(-sin(alpha2 + beta1) * sin(theta1 / 2) * cos(theta2 / 2) +
+                           cos(alpha1 + beta2) * cos(theta1 / 2) * sin(theta2 / 2)) ** 2
+
+    assert probs[2] == abs(cos(alpha2 + beta1) * sin(theta1 / 2) * cos(theta2 / 2) +
+                           sin(alpha1 + beta2) * cos(theta1 / 2) * sin(theta2 / 2)) ** 2
+
+    assert probs[3] == abs(-sin(alpha1 - alpha2) * cos(theta1 / 2) * cos(theta2 / 2) +
+                           cos(beta1 - beta2) * sin(theta1 / 2) * sin(theta2 / 2)) ** 2
 
 
 def test_params_fixed(ewl: EWL):
