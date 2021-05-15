@@ -1,5 +1,5 @@
 import warnings
-from functools import cached_property, reduce, cache
+from functools import cached_property, reduce
 from itertools import product
 from math import log2
 from operator import add
@@ -21,8 +21,14 @@ from sympy import init_printing, Matrix, Array
 from sympy.physics.quantum import TensorProduct
 from sympy.physics.quantum.qubit import Qubit, qubit_to_matrix  # noqa: F401
 
-init_printing()
+try:
+    from functools import cache  # Python 3.9
+except ImportError:
+    from functools import lru_cache
 
+    cache = lru_cache(maxsize=None)
+
+init_printing()
 warnings.simplefilter('ignore', category=MatplotlibDeprecationWarning)
 
 try:
