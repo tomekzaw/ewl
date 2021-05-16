@@ -137,6 +137,9 @@ class EWL:
 
     @cache
     def payoff_function(self, *, player: Optional[int], simplify: bool = True):
+        if self.payoff_matrix is None:
+            raise Exception('Payoff matrix not defined')
+
         if player is not None:
             assert player < self.number_of_players, 'Invalid number of player'
 
