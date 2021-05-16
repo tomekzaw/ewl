@@ -1,11 +1,14 @@
-import cmath
-from functools import cached_property
+import warnings
+from functools import cached_property, reduce
 from itertools import product
 from math import log2
-from typing import Sequence, Dict
+from operator import add
+from typing import Sequence, Dict, Set, Optional
 
+import matplotlib.pyplot as plt
 import numpy as np
 import sympy as sp
+from matplotlib import MatplotlibDeprecationWarning
 from qiskit import QuantumCircuit, execute, Aer, IBMQ
 from qiskit.compiler import transpile
 from qiskit.providers.ibmq import least_busy
@@ -14,9 +17,19 @@ from qiskit.providers.ibmq.exceptions import IBMQAccountCredentialsNotFound, IBM
 from qiskit.quantum_info.operators import Operator
 from qiskit.tools import job_monitor
 from qiskit.visualization import plot_histogram  # noqa: F401
-from sympy import Matrix
-from sympy.physics.quantum import TensorProduct, Dagger
+from sympy import init_printing, Matrix, Array
+from sympy.physics.quantum import TensorProduct
 from sympy.physics.quantum.qubit import Qubit, qubit_to_matrix  # noqa: F401
+
+try:
+    from functools import cache  # Python 3.9
+except ImportError:
+    from functools import lru_cache
+
+    cache = lru_cache(maxsize=None)
+
+init_printing()
+warnings.simplefilter('ignore', category=MatplotlibDeprecationWarning)
 
 try:
     IBMQ.load_account()
@@ -32,31 +45,49 @@ def number_of_qubits(psi) -> int:
     return int(log2(len(qubit_to_matrix(psi))))
 
 
+def convert_exp_to_trig(expr):
+    return expr.rewrite(sp.sin).simplify()
+
+
+def amplitude_to_prob(expr):
+    return sp.Abs(expr) ** 2
+
+
 def sympy_to_numpy_matrix(matrix: Matrix) -> np.array:
     return np.array(matrix).astype(complex)
 
 
-def U_theta_alpha_beta(*, theta: complex, alpha: complex, beta: complex = 3 * cmath.pi / 2) -> Matrix:
+def U_theta_alpha_beta(*, theta, alpha, beta=3 * sp.pi / 2) -> Matrix:
     return Matrix([
         [sp.exp(i * alpha) * sp.cos(theta / 2), i * sp.exp(i * beta) * sp.sin(theta / 2)],
         [i * sp.exp(-i * beta) * sp.sin(theta / 2), sp.exp(-i * alpha) * sp.cos(theta / 2)]
     ])
 
 
-def U_theta_phi_lambda(*, theta: complex, phi: complex, lambda_: complex) -> Matrix:
+def U_theta_phi_lambda(*, theta, phi, lambda_) -> Matrix:
     return Matrix([
         [sp.exp(-i * (phi + lambda_) / 2) * sp.cos(theta / 2), -sp.exp(-i * (phi - lambda_) / 2) * sp.sin(theta / 2)],
         [sp.exp(i * (phi - lambda_) / 2) * sp.sin(theta / 2), sp.exp(i * (phi + lambda_) / 2) * sp.cos(theta / 2)]
     ])
 
 
-def U(*args, **kwargs: complex) -> Matrix:
+def U_theta_phi(*, theta, phi) -> Matrix:
+    # original parametrization from "Quantum Games and Quantum Strategies" by J. Eisert, M. Wilkens, M. Lewenstein
+    return Matrix([
+        [sp.exp(i * phi) * sp.cos(theta / 2), sp.sin(theta / 2)],
+        [-sp.sin(theta / 2), sp.exp(-i * phi) * sp.cos(theta / 2)]
+    ])
+
+
+def U(*args, **kwargs) -> Matrix:
     if args:
         raise Exception('Please use keyword arguments')
     if set(kwargs) in [{'theta', 'alpha'}, {'theta', 'alpha', 'beta'}]:
         return U_theta_alpha_beta(**kwargs)
     if set(kwargs) == {'theta', 'phi', 'lambda_'}:
         return U_theta_phi_lambda(**kwargs)
+    if set(kwargs) == {'theta', 'phi'}:
+        return U_theta_phi(**kwargs)
     raise Exception('Invalid parametrization')
 
 
@@ -68,18 +99,16 @@ def J(psi, C: Matrix, D: Matrix) -> Matrix:
 
 
 class EWL:
-    def __init__(self, psi, strategies: Sequence[Matrix]):
-        assert number_of_qubits(psi) == len(strategies)
+    def __init__(self, psi, strategies: Sequence[Matrix], payoff_matrix: Optional[Array] = None):
+        assert number_of_qubits(psi) == len(strategies), 'Number of qubits and strategies must be equal'
+
+        if payoff_matrix is not None:
+            assert payoff_matrix.rank() == len(strategies) + 1, 'Invalid number of dimensions of payoff matrix'
+            assert payoff_matrix.shape == (len(strategies),) + (2,) * len(strategies), 'Invalid shape of payoff matrix'
 
         self.psi = psi
         self.strategies = strategies
-
-    @cached_property
-    def provider(self) -> AccountProvider:
-        try:
-            return IBMQ.get_provider()
-        except IBMQProviderError:
-            raise RuntimeError('Please run this notebook on https://quantum-computing.ibm.com/lab')
+        self.payoff_matrix = payoff_matrix
 
     @cached_property
     def number_of_players(self) -> int:
@@ -93,9 +122,78 @@ class EWL:
 
     @cached_property
     def J_H(self) -> Matrix:
-        return Dagger(self.J)
+        return self.J.H
+
+    @cache
+    def amplitudes(self, *, simplify: bool = True) -> Matrix:
+        ampl = self.J_H @ TensorProduct(*self.strategies) @ qubit_to_matrix(self.psi)
+        if simplify:
+            ampl = ampl.applyfunc(convert_exp_to_trig)
+        return ampl
+
+    @cache
+    def probs(self, *, simplify: bool = True) -> Matrix:
+        return self.amplitudes(simplify=simplify).applyfunc(amplitude_to_prob)
+
+    @cache
+    def payoff_function(self, *, player: Optional[int], simplify: bool = True):
+        if self.payoff_matrix is None:
+            raise Exception('Payoff matrix not defined')
+
+        if player is not None:
+            assert player < self.number_of_players, 'Invalid number of player'
+
+        probs = self.probs(simplify=simplify)
+        payoff_matrix = self.payoff_matrix[player] if player is not None else reduce(add, self.payoff_matrix)
+        return sum(
+            probs[i] * payoff_matrix[idx]
+            for i, idx in enumerate(product(range(2), repeat=self.number_of_players))
+        )
+
+    def plot_payoff_function(self, *, player: Optional[int],
+                             x: sp.Symbol, x_min, x_max, y: sp.Symbol, y_min, y_max, n: int = 20,
+                             figsize=(8, 8), cmap=plt.cm.coolwarm, **kwargs) -> plt.Figure:
+        f = sp.lambdify([x, y], self.payoff_function(player=player))
+
+        xs = np.linspace(x_min, x_max, n)
+        ys = np.linspace(y_min, y_max, n)
+        X, Y = np.meshgrid(xs, ys)
+        Z = f(X, Y)
+
+        fig = plt.figure(figsize=figsize)
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot_surface(X, Y, Z, cmap=cmap, antialiased=True)
+        ax.set(xlim=(x_min, x_max), ylim=(y_min, y_max),
+               xlabel=f'${sp.latex(x)}$', ylabel=f'${sp.latex(y)}$',
+               zlabel='expected payoff', **kwargs)
+        return fig
+
+    @cached_property
+    def params(self) -> Set[sp.Symbol]:
+        return self.psi.atoms(sp.Symbol).union(*(
+            strategy.atoms(sp.Symbol)
+            for strategy in self.strategies
+        ))
+
+    def fix(self, **kwargs):
+        params = {sp.Symbol(k): v for k, v in kwargs.items()}
+        psi = self.psi.subs(params)
+        strategies = [strategy.subs(params) for strategy in self.strategies]
+        payoff_matrix = self.payoff_matrix.subs(params) if self.payoff_matrix is not None else None
+        return type(self)(psi, strategies, payoff_matrix)
+
+    @cached_property
+    def provider(self) -> AccountProvider:
+        try:
+            return IBMQ.get_provider()
+        except IBMQProviderError:
+            raise RuntimeError('Please run this notebook on https://quantum-computing.ibm.com/lab '
+                               'or save account token using IBMQ.save_account function')
 
     def make_qc(self, *, measure: bool = True) -> QuantumCircuit:
+        if self.params:
+            raise Exception('Please provide values for the following parameters: ' + ', '.join(map(str, self.params)))
+
         j = Operator(sympy_to_numpy_matrix(self.J))
         j_h = Operator(sympy_to_numpy_matrix(self.J_H))
 
@@ -127,10 +225,6 @@ class EWL:
         backend = self.provider.get_backend(backend_name)
         transpiled_qc = transpile(self.qc, backend, optimization_level=optimization_level)
         return transpiled_qc.draw('mpl')
-
-    def calculate_probs(self) -> Matrix:
-        phi = self.J_H @ TensorProduct(*self.strategies) @ qubit_to_matrix(self.psi)
-        return phi.multiply_elementwise(phi.conjugate())
 
     def simulate_probs(self, backend_name: str = 'statevector_simulator') -> Dict[str, float]:
         circ = self.make_qc(measure=False)

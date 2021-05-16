@@ -4,3 +4,4 @@ numpy
 qiskit
 matplotlib
 pylatexenc
+ipympl
