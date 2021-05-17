@@ -16,6 +16,7 @@ pip install ewl
     -   [Two players](https://github.com/tomekzaw/ewl/blob/master/examples/example.ipynb)
     -   [Three players](https://github.com/tomekzaw/ewl/blob/master/examples/three_players.ipynb)
     -   [Payoff function 3D plot](https://github.com/tomekzaw/ewl/blob/master/examples/payoff_function_plot_3d.ipynb)
+    -   [Simulation with predefined gate noises](https://github.com/tomekzaw/ewl/blob/master/examples/noise_model.ipynb)
 
 ## Usage
 
