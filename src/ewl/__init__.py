@@ -11,6 +11,8 @@ import sympy as sp
 from matplotlib import MatplotlibDeprecationWarning
 from qiskit import QuantumCircuit, execute, Aer, IBMQ
 from qiskit.compiler import transpile
+from qiskit.providers.aer import AerSimulator
+from qiskit.providers.aer.noise import NoiseModel
 from qiskit.providers.ibmq import least_busy
 from qiskit.providers.ibmq.accountprovider import AccountProvider
 from qiskit.providers.ibmq.exceptions import IBMQAccountCredentialsNotFound, IBMQProviderError
@@ -99,7 +101,7 @@ def J(psi, C: Matrix, D: Matrix) -> Matrix:
 
 
 class EWL:
-    def __init__(self, psi, strategies: Sequence[Matrix], payoff_matrix: Optional[Array] = None):
+    def __init__(self, psi, strategies: Sequence[Matrix], payoff_matrix: Optional[Array] = None, noise_model: Optional[NoiseModel] = None):
         assert number_of_qubits(psi) == len(strategies), 'Number of qubits and strategies must be equal'
 
         if payoff_matrix is not None:
@@ -109,6 +111,7 @@ class EWL:
         self.psi = psi
         self.strategies = strategies
         self.payoff_matrix = payoff_matrix
+        self.noise_model = noise_model
 
     @cached_property
     def number_of_players(self) -> int:
@@ -180,7 +183,8 @@ class EWL:
         psi = self.psi.subs(params)
         strategies = [strategy.subs(params) for strategy in self.strategies]
         payoff_matrix = self.payoff_matrix.subs(params) if self.payoff_matrix is not None else None
-        return type(self)(psi, strategies, payoff_matrix)
+        noise_model = self.noise_model
+        return type(self)(psi, strategies, payoff_matrix, noise_model)
 
     @cached_property
     def provider(self) -> AccountProvider:
@@ -231,9 +235,11 @@ class EWL:
         simulator = Aer.get_backend(backend_name)
         return execute(circ, simulator).result().get_counts()
 
-    def simulate_counts(self, backend_name: str = 'qasm_simulator') -> Dict[str, int]:
-        simulator = Aer.get_backend(backend_name)
-        return execute(self.qc, simulator).result().get_counts()
+    def simulate_counts(self) -> Dict[str, int]:
+        simulator = AerSimulator(noise_model=self.noise_model)
+        circ = transpile(self.qc, simulator) if self.noise_model is not None else self.qc
+        result = simulator.run(circ).result()
+        return result.get_counts()
 
     def run(self, backend_name: str = 'least_busy', *, optimization_level: int = 3) -> Dict[str, int]:
         if backend_name == 'least_busy':
