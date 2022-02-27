@@ -27,6 +27,21 @@ def U_theta_phi(*, theta, phi) -> Matrix:
     ])
 
 
+def U_Frackiewicz_Pykacz(theta, phi) -> Matrix:
+    """
+    Full SU(2) parametrization from "Quantum Games with Strategies Induced by Basis Change Rules"
+    by Piotr Frąckiewicz and Jarosław Pykacz (DOI:10.1007/s10773-017-3423-6).
+    https://link.springer.com/content/pdf/10.1007%2Fs10773-017-3423-6.pdf
+    :param theta: [0, PI]
+    :param phi: [0, 2*PI]
+    :return:
+    """
+    return Matrix([
+        [sp.exp(i * phi) * sp.cos(theta / 2), i * sp.exp(i * phi) * sp.sin(theta / 2)],
+        [i * sp.exp(-i * phi) * sp.sin(theta / 2), sp.exp(-i * phi) * sp.cos(theta / 2)]
+    ])
+
+
 def U(*args, **kwargs) -> Matrix:
     if args:
         raise Exception('Please use keyword arguments')
