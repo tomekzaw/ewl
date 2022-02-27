@@ -23,6 +23,8 @@ from sympy import init_printing, Matrix, Array
 from sympy.physics.quantum import TensorProduct
 from sympy.physics.quantum.qubit import Qubit, qubit_to_matrix  # noqa: F401
 
+from ewl.parametrizations import U
+
 try:
     from functools import cache  # Python 3.9
 except ImportError:
@@ -57,40 +59,6 @@ def amplitude_to_prob(expr):
 
 def sympy_to_numpy_matrix(matrix: Matrix) -> np.array:
     return np.array(matrix).astype(complex)
-
-
-def U_theta_alpha_beta(*, theta, alpha, beta=3 * sp.pi / 2) -> Matrix:
-    return Matrix([
-        [sp.exp(i * alpha) * sp.cos(theta / 2), i * sp.exp(i * beta) * sp.sin(theta / 2)],
-        [i * sp.exp(-i * beta) * sp.sin(theta / 2), sp.exp(-i * alpha) * sp.cos(theta / 2)]
-    ])
-
-
-def U_theta_phi_lambda(*, theta, phi, lambda_) -> Matrix:
-    return Matrix([
-        [sp.exp(-i * (phi + lambda_) / 2) * sp.cos(theta / 2), -sp.exp(-i * (phi - lambda_) / 2) * sp.sin(theta / 2)],
-        [sp.exp(i * (phi - lambda_) / 2) * sp.sin(theta / 2), sp.exp(i * (phi + lambda_) / 2) * sp.cos(theta / 2)]
-    ])
-
-
-def U_theta_phi(*, theta, phi) -> Matrix:
-    # original parametrization from "Quantum Games and Quantum Strategies" by J. Eisert, M. Wilkens, M. Lewenstein
-    return Matrix([
-        [sp.exp(i * phi) * sp.cos(theta / 2), sp.sin(theta / 2)],
-        [-sp.sin(theta / 2), sp.exp(-i * phi) * sp.cos(theta / 2)]
-    ])
-
-
-def U(*args, **kwargs) -> Matrix:
-    if args:
-        raise Exception('Please use keyword arguments')
-    if set(kwargs) in [{'theta', 'alpha'}, {'theta', 'alpha', 'beta'}]:
-        return U_theta_alpha_beta(**kwargs)
-    if set(kwargs) == {'theta', 'phi', 'lambda_'}:
-        return U_theta_phi_lambda(**kwargs)
-    if set(kwargs) == {'theta', 'phi'}:
-        return U_theta_phi(**kwargs)
-    raise Exception('Invalid parametrization')
 
 
 def J(psi, C: Matrix, D: Matrix) -> Matrix:
