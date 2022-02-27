@@ -22,8 +22,15 @@ def U_theta_phi_lambda(*, theta, phi, lambda_) -> Matrix:
     ])
 
 
-def U_theta_phi(*, theta, phi) -> Matrix:
-    # original parametrization from "Quantum Games and Quantum Strategies" by J. Eisert, M. Wilkens, M. Lewenstein
+def U_Eisert_Wilkens_Lewenstein(*, theta, phi) -> Matrix:
+    """
+    Original parametrization from "Quantum Games and Quantum Strategies"
+    by Jens Eisert, Martin Wilkens, and Maciej Lewenstein (DOI:10.1103/PhysRevLett.83.3077).
+    https://arxiv.org/pdf/quant-ph/9806088.pdf
+    :param theta: [0, PI]
+    :param phi: [0, PI/2]
+    :return:
+    """
     return Matrix([
         [exp(i * phi) * cos(theta / 2), sin(theta / 2)],
         [-sin(theta / 2), exp(-i * phi) * cos(theta / 2)]
@@ -53,5 +60,5 @@ def U(*args, **kwargs) -> Matrix:
     if set(kwargs) == {'theta', 'phi', 'lambda_'}:
         return U_theta_phi_lambda(**kwargs)
     if set(kwargs) == {'theta', 'phi'}:
-        return U_theta_phi(**kwargs)
+        return U_Eisert_Wilkens_Lewenstein(**kwargs)
     raise Exception('Invalid parametrization')
