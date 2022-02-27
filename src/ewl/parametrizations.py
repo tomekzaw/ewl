@@ -3,27 +3,30 @@ from sympy import Matrix
 
 i = sp.I
 pi = sp.pi
+sin = sp.sin
+cos = sp.cos
+exp = sp.exp
 
 
 def U_theta_alpha_beta(*, theta, alpha, beta=3 * pi / 2) -> Matrix:
     return Matrix([
-        [sp.exp(i * alpha) * sp.cos(theta / 2), i * sp.exp(i * beta) * sp.sin(theta / 2)],
-        [i * sp.exp(-i * beta) * sp.sin(theta / 2), sp.exp(-i * alpha) * sp.cos(theta / 2)]
+        [exp(i * alpha) * cos(theta / 2), i * exp(i * beta) * sin(theta / 2)],
+        [i * exp(-i * beta) * sin(theta / 2), exp(-i * alpha) * cos(theta / 2)]
     ])
 
 
 def U_theta_phi_lambda(*, theta, phi, lambda_) -> Matrix:
     return Matrix([
-        [sp.exp(-i * (phi + lambda_) / 2) * sp.cos(theta / 2), -sp.exp(-i * (phi - lambda_) / 2) * sp.sin(theta / 2)],
-        [sp.exp(i * (phi - lambda_) / 2) * sp.sin(theta / 2), sp.exp(i * (phi + lambda_) / 2) * sp.cos(theta / 2)]
+        [exp(-i * (phi + lambda_) / 2) * cos(theta / 2), -exp(-i * (phi - lambda_) / 2) * sin(theta / 2)],
+        [exp(i * (phi - lambda_) / 2) * sin(theta / 2), exp(i * (phi + lambda_) / 2) * cos(theta / 2)]
     ])
 
 
 def U_theta_phi(*, theta, phi) -> Matrix:
     # original parametrization from "Quantum Games and Quantum Strategies" by J. Eisert, M. Wilkens, M. Lewenstein
     return Matrix([
-        [sp.exp(i * phi) * sp.cos(theta / 2), sp.sin(theta / 2)],
-        [-sp.sin(theta / 2), sp.exp(-i * phi) * sp.cos(theta / 2)]
+        [exp(i * phi) * cos(theta / 2), sin(theta / 2)],
+        [-sin(theta / 2), exp(-i * phi) * cos(theta / 2)]
     ])
 
 
@@ -37,8 +40,8 @@ def U_Frackiewicz_Pykacz(theta, phi) -> Matrix:
     :return:
     """
     return Matrix([
-        [sp.exp(i * phi) * sp.cos(theta / 2), i * sp.exp(i * phi) * sp.sin(theta / 2)],
-        [i * sp.exp(-i * phi) * sp.sin(theta / 2), sp.exp(-i * phi) * sp.cos(theta / 2)]
+        [exp(i * phi) * cos(theta / 2), i * exp(i * phi) * sin(theta / 2)],
+        [i * exp(-i * phi) * sin(theta / 2), exp(-i * phi) * cos(theta / 2)]
     ])
 
 

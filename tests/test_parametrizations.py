@@ -9,14 +9,17 @@ from ewl.parametrizations import U_theta_alpha_beta, U_theta_phi_lambda, U_theta
 i = sp.I
 pi = sp.pi
 sqrt2 = sp.sqrt(2)
+sin = sp.sin
+cos = sp.cos
+exp = sp.exp
 
 
 def test_U_theta_alpha_beta():
     theta, alpha, beta = sp.symbols('theta alpha beta')
     actual = U_theta_alpha_beta(theta=theta, alpha=alpha, beta=beta)
     expected = Matrix([
-        [sp.exp(i * alpha) * sp.cos(theta / 2), i * sp.exp(i * beta) * sp.sin(theta / 2)],
-        [i * sp.exp(-i * beta) * sp.sin(theta / 2), sp.exp(-i * alpha) * sp.cos(theta / 2)]
+        [exp(i * alpha) * cos(theta / 2), i * exp(i * beta) * sin(theta / 2)],
+        [i * exp(-i * beta) * sin(theta / 2), exp(-i * alpha) * cos(theta / 2)]
     ])
     assert actual == expected
 
@@ -25,8 +28,8 @@ def test_U_theta_phi_lambda():
     theta, phi, lambda_ = sp.symbols('theta phi lambda')
     actual = U_theta_phi_lambda(theta=theta, phi=phi, lambda_=lambda_)
     expected = Matrix([
-        [sp.exp(-i * (phi + lambda_) / 2) * sp.cos(theta / 2), -sp.exp(-i * (phi - lambda_) / 2) * sp.sin(theta / 2)],
-        [sp.exp(i * (phi - lambda_) / 2) * sp.sin(theta / 2), sp.exp(i * (phi + lambda_) / 2) * sp.cos(theta / 2)]
+        [exp(-i * (phi + lambda_) / 2) * cos(theta / 2), -exp(-i * (phi - lambda_) / 2) * sin(theta / 2)],
+        [exp(i * (phi - lambda_) / 2) * sin(theta / 2), exp(i * (phi + lambda_) / 2) * cos(theta / 2)]
     ])
     assert actual == expected
 
@@ -35,8 +38,8 @@ def test_U_theta_phi():
     theta, phi = sp.symbols('theta phi')
     actual = U_theta_phi(theta=theta, phi=phi)
     expected = Matrix([
-        [sp.exp(i * phi) * sp.cos(theta / 2), sp.sin(theta / 2)],
-        [-sp.sin(theta / 2), sp.exp(-i * phi) * sp.cos(theta / 2)]
+        [exp(i * phi) * cos(theta / 2), sin(theta / 2)],
+        [-sin(theta / 2), exp(-i * phi) * cos(theta / 2)]
     ])
     assert actual == expected
 
@@ -45,8 +48,8 @@ def test_U_Frackiewicz_Pykacz():
     theta, phi = sp.symbols('theta phi')
     actual = U_Frackiewicz_Pykacz(theta=theta, phi=phi)
     expected = Matrix([
-        [sp.exp(i * phi) * sp.cos(theta / 2), i * sp.exp(i * phi) * sp.sin(theta / 2)],
-        [i * sp.exp(-i * phi) * sp.sin(theta / 2), sp.exp(-i * phi) * sp.cos(theta / 2)]
+        [exp(i * phi) * cos(theta / 2), i * exp(i * phi) * sin(theta / 2)],
+        [i * exp(-i * phi) * sin(theta / 2), exp(-i * phi) * cos(theta / 2)]
     ])
     assert actual == expected
 
