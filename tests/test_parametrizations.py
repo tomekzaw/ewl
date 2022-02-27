@@ -4,7 +4,8 @@ import pytest
 import sympy as sp
 from sympy import Matrix
 
-from ewl.parametrizations import U_theta_alpha_beta, U_theta_phi_lambda, U_Eisert_Wilkens_Lewenstein, U_Frackiewicz_Pykacz, U
+from ewl.parametrizations import U_theta_alpha_beta, U_theta_phi_lambda, U_theta_phi_alpha, \
+    U_Eisert_Wilkens_Lewenstein, U_Frackiewicz_Pykacz, U
 
 i = sp.I
 pi = sp.pi
@@ -30,6 +31,16 @@ def test_U_theta_phi_lambda():
     expected = Matrix([
         [exp(-i * (phi + lambda_) / 2) * cos(theta / 2), -exp(-i * (phi - lambda_) / 2) * sin(theta / 2)],
         [exp(i * (phi - lambda_) / 2) * sin(theta / 2), exp(i * (phi + lambda_) / 2) * cos(theta / 2)]
+    ])
+    assert actual == expected
+
+
+def test_U_theta_phi_alpha():
+    theta, phi, alpha = sp.symbols('theta phi alpha')
+    actual = U_theta_phi_alpha(theta=theta, phi=phi, alpha=alpha)
+    expected = Matrix([
+        [exp(-i * phi) * cos(theta / 2), exp(i * alpha) * sin(theta / 2)],
+        [-exp(-i * alpha) * sin(theta / 2), exp(i * phi) * cos(theta / 2)]
     ])
     assert actual == expected
 

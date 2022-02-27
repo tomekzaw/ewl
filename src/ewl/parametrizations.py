@@ -22,6 +22,21 @@ def U_theta_phi_lambda(*, theta, phi, lambda_) -> Matrix:
     ])
 
 
+def U_theta_phi_alpha(*, theta, phi, alpha) -> Matrix:
+    """
+    Parametrization used in "Dlaczego w dylemta więźnia warto grać kwantowo?" by Marek Szopa.
+    https://www.ue.katowice.pl/fileadmin/_migrated/content_uploads/11_M.Szopa__Dlaczego_w_dylemat_wieznia....pdf
+    :param theta: [0, PI]
+    :param phi: [-PI, PI]
+    :param alpha: [-PI, PI]
+    :return:
+    """
+    return Matrix([
+        [exp(-i * phi) * cos(theta / 2), exp(i * alpha) * sin(theta / 2)],
+        [-exp(-i * alpha) * sin(theta / 2), exp(i * phi) * cos(theta / 2)]
+    ])
+
+
 def U_Eisert_Wilkens_Lewenstein(*, theta, phi) -> Matrix:
     """
     Original parametrization from "Quantum Games and Quantum Strategies"
@@ -37,7 +52,7 @@ def U_Eisert_Wilkens_Lewenstein(*, theta, phi) -> Matrix:
     ])
 
 
-def U_Frackiewicz_Pykacz(theta, phi) -> Matrix:
+def U_Frackiewicz_Pykacz(*, theta, phi) -> Matrix:
     """
     Full SU(2) parametrization from "Quantum Games with Strategies Induced by Basis Change Rules"
     by Piotr Frąckiewicz and Jarosław Pykacz (DOI:10.1007/s10773-017-3423-6).
