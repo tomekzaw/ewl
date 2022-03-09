@@ -5,7 +5,7 @@ import sympy as sp
 from sympy import Matrix
 
 from ewl.parametrizations import U_theta_alpha_beta, U_theta_phi_lambda, U_theta_phi_alpha, \
-    U_Eisert_Wilkens_Lewenstein, U_Frackiewicz_Pykacz, U
+    U_Eisert_Wilkens_Lewenstein, U_Frackiewicz_Pykacz, U_IBM, U
 
 i = sp.I
 pi = sp.pi
@@ -63,6 +63,17 @@ def test_U_Frackiewicz_Pykacz():
         [i * exp(-i * phi) * sin(theta / 2), exp(-i * phi) * cos(theta / 2)]
     ])
     assert actual == expected
+
+
+def test_U_IBM():
+    theta, phi, lambda_ = sp.symbols('theta phi lambda')
+    actual = U_IBM(theta=theta, phi=phi, lambda_=lambda_)
+    expected = Matrix([
+        [cos(theta / 2), -exp(i * lambda_) * sin(theta / 2)],
+        [exp(i * phi) * sin(theta / 2), exp(i * (phi + lambda_)) * cos(theta / 2)]
+    ])
+    assert actual == expected
+
 
 
 @pytest.mark.parametrize('kwargs, expected', [

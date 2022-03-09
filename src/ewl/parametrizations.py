@@ -67,6 +67,21 @@ def U_Frackiewicz_Pykacz(*, theta, phi) -> Matrix:
     ])
 
 
+def U_IBM(*, theta, phi, lambda_) -> Matrix:
+    """
+    General single-qubit quantum gate as defined in Qiskit textbook by IBM.
+    https://qiskit.org/textbook/ch-states/single-qubit-gates.html#7.-The-U-gate--
+    :param theta:
+    :param phi:
+    :param lambda_:
+    :return:
+    """
+    return Matrix([
+        [cos(theta / 2), -exp(i * lambda_) * sin(theta / 2)],
+        [exp(i * phi) * sin(theta / 2), exp(i * (phi + lambda_)) * cos(theta / 2)]
+    ])
+
+
 def U(*args, **kwargs) -> Matrix:
     if args:
         raise Exception('Please use keyword arguments')
