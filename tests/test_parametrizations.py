@@ -75,7 +75,6 @@ def test_U_IBM():
     assert actual == expected
 
 
-
 @pytest.mark.parametrize('kwargs, expected', [
     # theta, alpha, beta
     (dict(theta=0, alpha=0, beta=pi / 2), Matrix([[1, 0], [0, 1]])),
