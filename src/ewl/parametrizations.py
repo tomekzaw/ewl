@@ -24,7 +24,7 @@ def U_theta_phi_lambda(*, theta, phi, lambda_) -> Matrix:
 
 def U_theta_phi_alpha(*, theta, phi, alpha) -> Matrix:
     """
-    Parametrization used in "Dlaczego w dylemta więźnia warto grać kwantowo?" by Marek Szopa.
+    Parametrization used in "Dlaczego w dylemat więźnia warto grać kwantowo?" by Marek Szopa.
     https://www.ue.katowice.pl/fileadmin/_migrated/content_uploads/11_M.Szopa__Dlaczego_w_dylemat_wieznia....pdf
     :param theta: [0, PI]
     :param phi: [-PI, PI]
