@@ -4,7 +4,7 @@ import pytest
 import sympy as sp
 from sympy import Matrix
 
-from ewl.parametrizations import U_theta_alpha_beta, U_theta_phi_lambda, U_theta_phi_alpha, \
+from ewl.parametrizations import U_theta_alpha_beta, U_theta_gamma_delta, U_theta_phi_lambda, U_theta_phi_alpha, \
     U_Eisert_Wilkens_Lewenstein, U_Frackiewicz_Pykacz, U_IBM, U
 
 i = sp.I
@@ -21,6 +21,16 @@ def test_U_theta_alpha_beta():
     expected = Matrix([
         [exp(i * alpha) * cos(theta / 2), i * exp(i * beta) * sin(theta / 2)],
         [i * exp(-i * beta) * sin(theta / 2), exp(-i * alpha) * cos(theta / 2)]
+    ])
+    assert actual == expected
+
+
+def test_U_theta_gamma_delta():
+    theta, gamma, delta = sp.symbols('theta gamma delta')
+    actual = U_theta_gamma_delta(theta=theta, gamma=gamma, delta=delta)
+    expected = Matrix([
+        [exp(i * (gamma + delta)) * cos(theta / 2), i * exp(i * (gamma - delta)) * sin(theta / 2)],
+        [i * exp(-i * (gamma - delta)) * sin(theta / 2), exp(-i * (gamma + delta)) * cos(theta / 2)]
     ])
     assert actual == expected
 
@@ -79,7 +89,7 @@ def test_U_IBM():
     # theta, alpha, beta
     (dict(theta=0, alpha=0, beta=pi / 2), Matrix([[1, 0], [0, 1]])),
     (dict(theta=pi / 2, alpha=pi / 2, beta=0), Matrix([[i / sqrt2, i / sqrt2], [i / sqrt2, -i / sqrt2]])),
-    (dict(theta=0, alpha=pi / 2), Matrix([[i, 0], [0, -i]])),
+    (dict(theta=0, alpha=pi / 2, beta=3 * pi / 2), Matrix([[i, 0], [0, -i]])),
     (dict(theta=0, alpha=0, beta=0), Matrix([[1, 0], [0, 1]])),
     (dict(theta=pi, alpha=0, beta=0), Matrix([[0, i], [i, 0]])),
 

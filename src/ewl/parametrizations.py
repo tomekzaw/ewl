@@ -8,14 +8,46 @@ cos = sp.cos
 exp = sp.exp
 
 
-def U_theta_alpha_beta(*, theta, alpha, beta=3 * pi / 2) -> Matrix:
+def U_theta_alpha_beta(*, theta, alpha, beta) -> Matrix:
+    """
+    Full SU(2) parametrization from "A quantum approach to twice-repeated 2×2 game"
+    by Katarzyna Rycerz and Piotr Frąckiewicz (DOI:10.1007/s11128-020-02743-0).
+    https://www.researchgate.net/publication/343293505_A_quantum_approach_to_twice-repeated_2times_2_game
+    :param theta:
+    :param alpha:
+    :param beta:
+    :return:
+    """
     return Matrix([
         [exp(i * alpha) * cos(theta / 2), i * exp(i * beta) * sin(theta / 2)],
         [i * exp(-i * beta) * sin(theta / 2), exp(-i * alpha) * cos(theta / 2)]
     ])
 
 
+def U_theta_gamma_delta(*, theta, gamma, delta) -> Matrix:
+    """
+    Full SU(2) parametrization from "A quantum approach to twice-repeated 2×2 game"
+    by Katarzyna Rycerz and Piotr Frąckiewicz (DOI:10.1007/s11128-020-02743-0).
+    https://www.researchgate.net/publication/343293505_A_quantum_approach_to_twice-repeated_2times_2_game
+    :param theta:
+    :param gamma:
+    :param delta:
+    :return:
+    """
+    return Matrix([
+        [exp(i * (gamma + delta)) * cos(theta / 2), i * exp(i * (gamma - delta)) * sin(theta / 2)],
+        [i * exp(-i * (gamma - delta)) * sin(theta / 2), exp(-i * (gamma + delta)) * cos(theta / 2)]
+    ])
+
+
 def U_theta_phi_lambda(*, theta, phi, lambda_) -> Matrix:
+    """
+    Full SU(2) parametrization.
+    :param theta:
+    :param phi:
+    :param lambda_:
+    :return:
+    """
     return Matrix([
         [exp(-i * (phi + lambda_) / 2) * cos(theta / 2), -exp(-i * (phi - lambda_) / 2) * sin(theta / 2)],
         [exp(i * (phi - lambda_) / 2) * sin(theta / 2), exp(i * (phi + lambda_) / 2) * cos(theta / 2)]
@@ -85,7 +117,7 @@ def U_IBM(*, theta, phi, lambda_) -> Matrix:
 def U(*args, **kwargs) -> Matrix:
     if args:
         raise Exception('Please use keyword arguments')
-    if set(kwargs) in [{'theta', 'alpha'}, {'theta', 'alpha', 'beta'}]:
+    if set(kwargs) == {'theta', 'alpha', 'beta'}:
         return U_theta_alpha_beta(**kwargs)
     if set(kwargs) == {'theta', 'phi', 'lambda_'}:
         return U_theta_phi_lambda(**kwargs)
