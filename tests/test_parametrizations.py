@@ -55,6 +55,16 @@ def test_U_theta_phi_alpha():
     assert actual == expected
 
 
+def test_U_IBM():
+    theta, phi, lambda_ = sp.symbols('theta phi lambda')
+    actual = U_IBM(theta=theta, phi=phi, lambda_=lambda_)
+    expected = Matrix([
+        [cos(theta / 2), -exp(i * lambda_) * sin(theta / 2)],
+        [exp(i * phi) * sin(theta / 2), exp(i * (phi + lambda_)) * cos(theta / 2)]
+    ])
+    assert actual == expected
+
+
 def test_U_Eisert_Wilkens_Lewenstein():
     theta, phi = sp.symbols('theta phi')
     actual = U_Eisert_Wilkens_Lewenstein(theta=theta, phi=phi)
@@ -71,16 +81,6 @@ def test_U_Frackiewicz_Pykacz():
     expected = Matrix([
         [exp(i * phi) * cos(theta / 2), i * exp(i * phi) * sin(theta / 2)],
         [i * exp(-i * phi) * sin(theta / 2), exp(-i * phi) * cos(theta / 2)]
-    ])
-    assert actual == expected
-
-
-def test_U_IBM():
-    theta, phi, lambda_ = sp.symbols('theta phi lambda')
-    actual = U_IBM(theta=theta, phi=phi, lambda_=lambda_)
-    expected = Matrix([
-        [cos(theta / 2), -exp(i * lambda_) * sin(theta / 2)],
-        [exp(i * phi) * sin(theta / 2), exp(i * (phi + lambda_)) * cos(theta / 2)]
     ])
     assert actual == expected
 

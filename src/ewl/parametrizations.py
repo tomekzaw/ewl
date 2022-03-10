@@ -69,6 +69,21 @@ def U_theta_phi_alpha(*, theta, phi, alpha) -> Matrix:
     ])
 
 
+def U_IBM(*, theta, phi, lambda_) -> Matrix:
+    """
+    General single-qubit quantum gate as defined in Qiskit textbook by IBM.
+    https://qiskit.org/textbook/ch-states/single-qubit-gates.html#7.-The-U-gate--
+    :param theta:
+    :param phi:
+    :param lambda_:
+    :return:
+    """
+    return Matrix([
+        [cos(theta / 2), -exp(i * lambda_) * sin(theta / 2)],
+        [exp(i * phi) * sin(theta / 2), exp(i * (phi + lambda_)) * cos(theta / 2)]
+    ])
+
+
 def U_Eisert_Wilkens_Lewenstein(*, theta, phi) -> Matrix:
     """
     Original parametrization from "Quantum Games and Quantum Strategies"
@@ -96,21 +111,6 @@ def U_Frackiewicz_Pykacz(*, theta, phi) -> Matrix:
     return Matrix([
         [exp(i * phi) * cos(theta / 2), i * exp(i * phi) * sin(theta / 2)],
         [i * exp(-i * phi) * sin(theta / 2), exp(-i * phi) * cos(theta / 2)]
-    ])
-
-
-def U_IBM(*, theta, phi, lambda_) -> Matrix:
-    """
-    General single-qubit quantum gate as defined in Qiskit textbook by IBM.
-    https://qiskit.org/textbook/ch-states/single-qubit-gates.html#7.-The-U-gate--
-    :param theta:
-    :param phi:
-    :param lambda_:
-    :return:
-    """
-    return Matrix([
-        [cos(theta / 2), -exp(i * lambda_) * sin(theta / 2)],
-        [exp(i * phi) * sin(theta / 2), exp(i * (phi + lambda_)) * cos(theta / 2)]
     ])
 
 
