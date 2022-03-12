@@ -7,19 +7,12 @@ from qiskit.providers.aer import AerSimulator
 from qiskit.providers.aer.noise import NoiseModel
 from qiskit.providers.ibmq import least_busy
 from qiskit.providers.ibmq.accountprovider import AccountProvider
-from qiskit.providers.ibmq.exceptions import IBMQAccountCredentialsNotFound, IBMQProviderError
+from qiskit.providers.ibmq.exceptions import IBMQProviderError
 from qiskit.quantum_info.operators import Operator
 from qiskit.tools import job_monitor
 
 from ewl import EWL
 from ewl.utils import sympy_to_numpy_matrix
-
-
-def try_load_account():
-    try:
-        IBMQ.load_account()
-    except IBMQAccountCredentialsNotFound:
-        pass
 
 
 class EWL_IBMQ:

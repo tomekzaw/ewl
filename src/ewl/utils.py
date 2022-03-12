@@ -2,7 +2,7 @@ from math import log2
 
 import numpy as np
 import sympy as sp
-from sympy import Abs, init_printing, Matrix, sin  # noqa: F401
+from sympy import Matrix
 from sympy.physics.quantum.qubit import qubit_to_matrix
 
 try:
