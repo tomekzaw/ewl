@@ -1,6 +1,7 @@
 setuptools>=42
 wheel
 numpy
+sympy
 qiskit
 matplotlib
 pylatexenc
