@@ -112,15 +112,3 @@ def U_Frackiewicz_Pykacz(*, theta, phi) -> Matrix:
         [exp(i * phi) * cos(theta / 2), i * exp(i * phi) * sin(theta / 2)],
         [i * exp(-i * phi) * sin(theta / 2), exp(-i * phi) * cos(theta / 2)]
     ])
-
-
-def U(*args, **kwargs) -> Matrix:
-    if args:
-        raise Exception('Please use keyword arguments')
-    if set(kwargs) == {'theta', 'alpha', 'beta'}:
-        return U_theta_alpha_beta(**kwargs)
-    if set(kwargs) == {'theta', 'phi', 'lambda_'}:
-        return U_theta_phi_lambda(**kwargs)
-    if set(kwargs) == {'theta', 'phi'}:
-        return U_Eisert_Wilkens_Lewenstein(**kwargs)
-    raise Exception('Invalid parametrization')

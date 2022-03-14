@@ -5,7 +5,7 @@ import sympy as sp
 from sympy import Matrix
 
 from ewl.parametrizations import U_theta_alpha_beta, U_theta_gamma_delta, U_theta_phi_lambda, U_theta_phi_alpha, \
-    U_Eisert_Wilkens_Lewenstein, U_Frackiewicz_Pykacz, U_IBM, U
+    U_Eisert_Wilkens_Lewenstein, U_Frackiewicz_Pykacz, U_IBM
 
 i = sp.I
 pi = sp.pi
@@ -85,20 +85,15 @@ def test_U_Frackiewicz_Pykacz():
     assert actual == expected
 
 
-@pytest.mark.parametrize('kwargs, expected', [
-    # theta, alpha, beta
-    (dict(theta=0, alpha=0, beta=pi / 2), Matrix([[1, 0], [0, 1]])),
-    (dict(theta=pi / 2, alpha=pi / 2, beta=0), Matrix([[i / sqrt2, i / sqrt2], [i / sqrt2, -i / sqrt2]])),
-    (dict(theta=0, alpha=pi / 2, beta=3 * pi / 2), Matrix([[i, 0], [0, -i]])),
-    (dict(theta=0, alpha=0, beta=0), Matrix([[1, 0], [0, 1]])),
-    (dict(theta=pi, alpha=0, beta=0), Matrix([[0, i], [i, 0]])),
-
-    # theta, phi, lambda
-    (dict(theta=0, phi=0, lambda_=0), Matrix([[1, 0], [0, 1]])),  # C
-    (dict(theta=pi, phi=0, lambda_=0), Matrix([[0, -1], [1, 0]])),  # D
-
-    # theta, phi
-    (dict(theta=0, phi=pi / 2), Matrix([[i, 0], [0, -i]]))
+@pytest.mark.parametrize('func, kwargs, expected', [
+    (U_theta_alpha_beta, dict(theta=0, alpha=0, beta=pi / 2), Matrix([[1, 0], [0, 1]])),
+    (U_theta_alpha_beta, dict(theta=pi / 2, alpha=pi / 2, beta=0), Matrix([[i / sqrt2, i / sqrt2], [i / sqrt2, -i / sqrt2]])),
+    (U_theta_alpha_beta, dict(theta=0, alpha=pi / 2, beta=3 * pi / 2), Matrix([[i, 0], [0, -i]])),
+    (U_theta_alpha_beta, dict(theta=0, alpha=0, beta=0), Matrix([[1, 0], [0, 1]])),
+    (U_theta_alpha_beta, dict(theta=pi, alpha=0, beta=0), Matrix([[0, i], [i, 0]])),
+    (U_theta_phi_lambda, dict(theta=0, phi=0, lambda_=0), Matrix([[1, 0], [0, 1]])),
+    (U_theta_phi_lambda, dict(theta=pi, phi=0, lambda_=0), Matrix([[0, -1], [1, 0]])),
+    (U_Eisert_Wilkens_Lewenstein, dict(theta=0, phi=pi / 2), Matrix([[i, 0], [0, -i]])),
 ])
-def test_U(kwargs: Dict[str, complex], expected: Matrix):
-    assert U(**kwargs) == expected
+def test_values(func, kwargs: Dict[str, complex], expected: Matrix):
+    assert func(**kwargs) == expected
