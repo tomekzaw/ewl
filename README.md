@@ -189,7 +189,7 @@ ewl_ibmq = EWL_IBMQ(ewl_fixed)
 You can also specify and apply noise model used in quantum simulation.
 
 ```python
-from qiskit.providers.aer.noise import NoiseModel, pauli_error, QuantumError, ReadoutError
+from qiskit.providers.aer.noise import NoiseModel, pauli_error
 
 p_error = 0.05
 bit_flip = pauli_error([('X', p_error), ('I', 1 - p_error)])
