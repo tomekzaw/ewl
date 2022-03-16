@@ -16,7 +16,7 @@ from ewl.utils import sympy_to_numpy_matrix
 
 
 class EWL_IBMQ:
-    def __init__(self, ewl: EWL, noise_model: Optional[NoiseModel] = None):
+    def __init__(self, ewl: EWL, *, noise_model: Optional[NoiseModel] = None):
         if ewl.params:
             raise Exception('Please provide values for the following parameters: ' + ', '.join(map(str, ewl.params)))
 

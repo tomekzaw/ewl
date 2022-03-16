@@ -5,7 +5,7 @@ from itertools import product
 from operator import add
 from typing import Optional, Sequence, Set
 
-from sympy import Array, I, Matrix, Symbol
+from sympy import Array, Matrix, Symbol
 from sympy.physics.quantum import TensorProduct
 from sympy.physics.quantum.qubit import qubit_to_matrix
 
@@ -13,7 +13,7 @@ from ewl.utils import amplitude_to_prob, cache, convert_exp_to_trig, number_of_q
 
 
 class EWL:
-    def __init__(self, psi, strategies: Sequence[Matrix], payoff_matrix: Optional[Array] = None):
+    def __init__(self, *, psi, C: Matrix, D: Matrix, strategies: Sequence[Matrix], payoff_matrix: Optional[Array] = None):
         assert number_of_qubits(psi) == len(strategies), 'Number of qubits and strategies must be equal'
 
         if payoff_matrix is not None:
@@ -21,6 +21,8 @@ class EWL:
             assert payoff_matrix.shape == (len(strategies),) + (2,) * len(strategies), 'Invalid shape of payoff matrix'
 
         self.psi = psi
+        self.C = C
+        self.D = D
         self.strategies = strategies
         self.payoff_matrix = payoff_matrix
 
@@ -41,15 +43,13 @@ class EWL:
         psi = self.psi.subs(replacements)
         strategies = [strategy.subs(replacements) for strategy in self.strategies]
         payoff_matrix = self.payoff_matrix.subs(params) if self.payoff_matrix is not None else None
-        return EWL(psi, strategies, payoff_matrix)
+        return EWL(psi=psi, C=self.C, D=self.D, strategies=strategies, payoff_matrix=payoff_matrix)
 
     @cached_property
     def J(self) -> Matrix:
-        C = Matrix([[1, 0], [0, 1]])
-        D = Matrix([[0, I], [I, 0]])
         return Matrix.hstack(*[
             TensorProduct(*base) @ qubit_to_matrix(self.psi)
-            for base in product((C, D), repeat=number_of_qubits(self.psi))
+            for base in product((self.C, self.D), repeat=number_of_qubits(self.psi))
         ])
 
     @cached_property
