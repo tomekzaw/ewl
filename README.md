@@ -53,12 +53,12 @@ It is also necessary to define two unitary strategies that represent the classic
 ```python
 C = sp.Matrix([
     [1, 0],
-    [0, 1]
+    [0, 1],
 ])
 
 D = sp.Matrix([
     [0, i],
-    [i, 0]
+    [i, 0],
 ])
 ```
 
@@ -67,7 +67,7 @@ Then you need to define the players' strategies. Each strategy must be a unitary
 ```python
 alice = sp.Matrix([
     [1, 0],
-    [0, 1]
+    [0, 1],
 ])
 ```
 
