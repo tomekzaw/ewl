@@ -48,17 +48,34 @@ from sympy.physics.quantum.qubit import Qubit
 psi = (Qubit('00') + i * Qubit('11')) / sqrt2
 ```
 
+It is also necessary to define two unitary strategies that represent the classical strategies:
+
+```python
+C = sp.Matrix([
+    [1, 0],
+    [0, 1],
+])
+
+D = sp.Matrix([
+    [0, i],
+    [i, 0],
+])
+```
+
 Then you need to define the players' strategies. Each strategy must be a unitary matrix as it represents a single-qubit quantum gate.
 
 ```python
-from ewl.parametrizations import *
-
-alice = sp.Matrix([[1, 0], [0, 1]])
+alice = sp.Matrix([
+    [1, 0],
+    [0, 1],
+])
 ```
 
 The library comes with a series of built-in parametrizations, including the original one from EWL paper as well as other 2- and 3 degrees of freedom parametrizations (see [here](https://github.com/tomekzaw/ewl/blob/master/src/ewl/parametrizations.py)).
 
 ```python
+from ewl.parametrizations import *
+
 bob = U_Eisert_Wilkens_Lewenstein(theta=pi / 2, phi=0)
 ```
 
@@ -73,9 +90,7 @@ charlie = U_Eisert_Wilkens_Lewenstein(theta=theta, phi=gamma / 2)
 You also need to define the payoff matrix, possibly with symbols, for arbitrary number of players.
 
 ```python
-from sympy import Array
-
-payoff_matrix = Array([
+payoff_matrix = sp.Array([
     [
         [3, 5],
         [0, 1],
@@ -92,7 +107,7 @@ Finally, you can make an instance of quantum game in the EWL protocol by providi
 ```python
 from ewl import EWL
 
-ewl = EWL(psi, [alice, bob], payoff_matrix)
+ewl = EWL(psi=psi, C=C, D=D, players=[alice, bob], payoff_matrix=payoff_matrix)
 ```
 
 ### Calculations
@@ -174,7 +189,7 @@ ewl_ibmq = EWL_IBMQ(ewl_fixed)
 You can also specify and apply noise model used in quantum simulation.
 
 ```python
-from qiskit.providers.aer.noise import NoiseModel, pauli_error, QuantumError, ReadoutError
+from qiskit.providers.aer.noise import NoiseModel, pauli_error
 
 p_error = 0.05
 bit_flip = pauli_error([('X', p_error), ('I', 1 - p_error)])
@@ -184,7 +199,7 @@ noise_model = NoiseModel()
 noise_model.add_all_qubit_quantum_error(bit_flip, ['u1', 'u2', 'u3'])
 noise_model.add_all_qubit_quantum_error(phase_flip, ['x'], [0])
 
-ewl_ibmq = EWL_IBMQ(ewl_fixed, noise_model)
+ewl_ibmq = EWL_IBMQ(ewl_fixed, noise_model=noise_model)
 ```
 
 You can draw the original quantum circuit of quantum game in the EWL protocol.
@@ -215,4 +230,14 @@ Finally, you can run the quantum game on a real quantum device:
 
 ```python
 ewl_ibmq.run(backend_name='ibmq_quito', optimization_level=3)
+```
+
+## Citation
+
+```bibtex
+@software{PythonEWL2022,
+  author = {Tomasz Zawadzki and Piotr Kotara},
+  title = {A Python tool for symbolic analysis of quantum games in EWL protocol with IBM Q integration},
+  howpublished = {\url{https://github.com/tomekzaw/ewl}},
+}
 ```

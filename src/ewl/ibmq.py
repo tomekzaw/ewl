@@ -16,7 +16,7 @@ from ewl.utils import sympy_to_numpy_matrix
 
 
 class EWL_IBMQ:
-    def __init__(self, ewl: EWL, noise_model: Optional[NoiseModel] = None):
+    def __init__(self, ewl: EWL, *, noise_model: Optional[NoiseModel] = None):
         if ewl.params:
             raise Exception('Please provide values for the following parameters: ' + ', '.join(map(str, ewl.params)))
 
@@ -41,8 +41,8 @@ class EWL_IBMQ:
         qc.append(j, all_qbits)
         qc.barrier()
 
-        for qbit, strategy in enumerate(self.ewl.strategies):
-            qc.append(Operator(sympy_to_numpy_matrix(strategy)), [qbit])
+        for qbit, player in enumerate(self.ewl.players):
+            qc.append(Operator(sympy_to_numpy_matrix(player)), [qbit])
 
         qc.barrier()
         qc.append(j_h, all_qbits)
