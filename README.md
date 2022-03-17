@@ -107,7 +107,7 @@ Finally, you can make an instance of quantum game in the EWL protocol by providi
 ```python
 from ewl import EWL
 
-ewl = EWL(psi=psi, C=C, D=D, strategies=[alice, bob], payoff_matrix=payoff_matrix)
+ewl = EWL(psi=psi, C=C, D=D, players=[alice, bob], payoff_matrix=payoff_matrix)
 ```
 
 ### Calculations

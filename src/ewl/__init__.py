@@ -13,37 +13,37 @@ from ewl.utils import amplitude_to_prob, cache, convert_exp_to_trig, number_of_q
 
 
 class EWL:
-    def __init__(self, *, psi, C: Matrix, D: Matrix, strategies: Sequence[Matrix], payoff_matrix: Optional[Array] = None):
-        assert number_of_qubits(psi) == len(strategies), 'Number of qubits and strategies must be equal'
+    def __init__(self, *, psi, C: Matrix, D: Matrix, players: Sequence[Matrix], payoff_matrix: Optional[Array] = None):
+        assert number_of_qubits(psi) == len(players), 'Number of qubits and players must be equal'
 
         if payoff_matrix is not None:
-            assert payoff_matrix.rank() == len(strategies) + 1, 'Invalid number of dimensions of payoff matrix'
-            assert payoff_matrix.shape == (len(strategies),) + (2,) * len(strategies), 'Invalid shape of payoff matrix'
+            assert payoff_matrix.rank() == len(players) + 1, 'Invalid number of dimensions of payoff matrix'
+            assert payoff_matrix.shape == (len(players),) + (2,) * len(players), 'Invalid shape of payoff matrix'
 
         self.psi = psi
         self.C = C
         self.D = D
-        self.strategies = strategies
+        self.players = players
         self.payoff_matrix = payoff_matrix
 
     @cached_property
     def number_of_players(self) -> int:
-        return len(self.strategies)
+        return len(self.players)
 
     @cached_property
     def params(self) -> Set[Symbol]:
         return self.psi.atoms(Symbol).union(*(
-            strategy.atoms(Symbol)
-            for strategy in self.strategies
+            player.atoms(Symbol)
+            for player in self.players
         ))
 
     def fix(self, **kwargs) -> EWL:
         params = {str(symbol): symbol for symbol in self.params}
         replacements = {params[symbol]: value for symbol, value in kwargs.items()}
         psi = self.psi.subs(replacements)
-        strategies = [strategy.subs(replacements) for strategy in self.strategies]
+        players = [player.subs(replacements) for player in self.players]
         payoff_matrix = self.payoff_matrix.subs(params) if self.payoff_matrix is not None else None
-        return EWL(psi=psi, C=self.C, D=self.D, strategies=strategies, payoff_matrix=payoff_matrix)
+        return EWL(psi=psi, C=self.C, D=self.D, players=players, payoff_matrix=payoff_matrix)
 
     @cached_property
     def J(self) -> Matrix:
@@ -58,7 +58,7 @@ class EWL:
 
     @cache
     def amplitudes(self, *, simplify: bool = True) -> Matrix:
-        ampl = self.J_H @ TensorProduct(*self.strategies) @ qubit_to_matrix(self.psi)
+        ampl = self.J_H @ TensorProduct(*self.players) @ qubit_to_matrix(self.psi)
         if simplify:
             ampl = ampl.applyfunc(convert_exp_to_trig)
         return ampl
