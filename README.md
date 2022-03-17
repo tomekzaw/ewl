@@ -231,3 +231,13 @@ Finally, you can run the quantum game on a real quantum device:
 ```python
 ewl_ibmq.run(backend_name='ibmq_quito', optimization_level=3)
 ```
+
+## Citation
+
+```bibtex
+@software{PythonEWL2022,
+  author = {Tomasz Zawadzki and Piotr Kotara},
+  title = {A Python tool for symbolic analysis of quantum games in EWL protocol with IBM Q integration},
+  howpublished = {\url{https://github.com/tomekzaw/ewl}},
+}
+```
