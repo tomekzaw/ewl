@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 import sympy as sp
 from sympy import Matrix, Symbol
+from sympy.physics.quantum import TensorProduct
 from sympy.physics.quantum.qubit import Qubit
 
 from ewl.utils import number_of_qubits, amplitude_to_prob, sympy_to_numpy_matrix
@@ -32,3 +33,23 @@ def test_sympy_to_numpy_matrix():
     actual = sympy_to_numpy_matrix(Matrix(values))
     expected = np.array(values)
     assert np.allclose(actual, expected)
+
+
+def test_tensor_product():
+    a11, a12, a21, a22, b11, b12, b21, b22 = sp.symbols('a11 a12 a21 a22 b11 b12 b21 b22')
+    A = sp.Matrix([
+        [a11, a12],
+        [a21, a22],
+    ])
+    B = sp.Matrix([
+        [b11, b12],
+        [b21, b22],
+    ])
+    actual = TensorProduct(A, B)
+    expected = sp.Matrix([
+        [a11 * b11, a11 * b12, a12 * b11, a12 * b12],
+        [a11 * b21, a11 * b22, a12 * b21, a12 * b22],
+        [a21 * b11, a21 * b12, a22 * b11, a22 * b12],
+        [a21 * b21, a21 * b22, a22 * b21, a22 * b22],
+    ])
+    assert actual == expected
