@@ -17,6 +17,11 @@ def number_of_qubits(psi) -> int:
     return int(log2(len(qubit_to_matrix(psi))))
 
 
+def is_unitary(U: Matrix) -> bool:
+    I = sp.eye(U.shape[0])
+    return sp.simplify(U.H @ U) == I and sp.simplify(U @ U.H) == I
+
+
 def convert_exp_to_trig(expr):
     return expr.rewrite(sp.sin).simplify()
 
