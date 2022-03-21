@@ -9,12 +9,15 @@ from sympy import Array, Matrix, Symbol
 from sympy.physics.quantum import TensorProduct
 from sympy.physics.quantum.qubit import qubit_to_matrix
 
-from ewl.utils import amplitude_to_prob, cache, convert_exp_to_trig, number_of_qubits
+from ewl.utils import amplitude_to_prob, cache, convert_exp_to_trig, is_unitary, number_of_qubits
 
 
 class EWL:
     def __init__(self, *, psi, C: Matrix, D: Matrix, players: Sequence[Matrix], payoff_matrix: Optional[Array] = None):
         assert number_of_qubits(psi) == len(players), 'Number of qubits and players must be equal'
+
+        for i, player in enumerate(players):
+            assert is_unitary(player), f'Player {i} strategy is not unitary'
 
         if payoff_matrix is not None:
             assert payoff_matrix.rank() == len(players) + 1, 'Invalid number of dimensions of payoff matrix'

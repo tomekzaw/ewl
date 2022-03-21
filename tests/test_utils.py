@@ -5,13 +5,15 @@ from sympy import Matrix, Symbol
 from sympy.physics.quantum import TensorProduct
 from sympy.physics.quantum.qubit import Qubit
 
-from ewl.utils import number_of_qubits, amplitude_to_prob, sympy_to_numpy_matrix
+from ewl.utils import amplitude_to_prob, is_unitary, number_of_qubits, sympy_to_numpy_matrix
 
 i = sp.I
 sqrt2 = sp.sqrt(2)
 sin = sp.sin
 cos = sp.cos
 exp = sp.exp
+
+x = sp.Symbol('x', real=True)
 
 
 @pytest.mark.parametrize('psi, expected', [
@@ -21,6 +23,15 @@ exp = sp.exp
 ])
 def test_number_of_qubits(psi, expected: int):
     assert number_of_qubits(psi) == expected
+
+
+@pytest.mark.parametrize('U, expected', [
+    (sp.Matrix([[1, 0], [0, 1]]), True),
+    (sp.Matrix([[2, 3], [4, 5]]), False),
+    (sp.Matrix([[cos(x), -sin(x)], [sin(x), cos(x)]]), True),
+])
+def test_is_unitary(U: Matrix, expected: bool):
+    assert is_unitary(U) is expected
 
 
 def test_amplitude_to_prob_real():
