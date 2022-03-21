@@ -32,4 +32,4 @@ jobs:
           python setup.py install
       - name: Lint with flake8
         run: |
-          flake8 . --ignore E501 --exclude .venv
+          flake8 . --ignore E501,E741 --exclude .venv,build
