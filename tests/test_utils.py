@@ -26,9 +26,9 @@ def test_number_of_qubits(psi, expected: int):
 
 
 @pytest.mark.parametrize('U, expected', [
-    (sp.Matrix([[1, 0], [0, 1]]), True),
-    (sp.Matrix([[2, 3], [4, 5]]), False),
-    (sp.Matrix([[cos(x), -sin(x)], [sin(x), cos(x)]]), True),
+    (Matrix([[1, 0], [0, 1]]), True),
+    (Matrix([[2, 3], [4, 5]]), False),
+    (Matrix([[cos(x), -sin(x)], [sin(x), cos(x)]]), True),
 ])
 def test_is_unitary(U: Matrix, expected: bool):
     assert is_unitary(U) is expected
@@ -48,16 +48,16 @@ def test_sympy_to_numpy_matrix():
 
 def test_tensor_product():
     a11, a12, a21, a22, b11, b12, b21, b22 = sp.symbols('a11 a12 a21 a22 b11 b12 b21 b22')
-    A = sp.Matrix([
+    A = Matrix([
         [a11, a12],
         [a21, a22],
     ])
-    B = sp.Matrix([
+    B = Matrix([
         [b11, b12],
         [b21, b22],
     ])
     actual = TensorProduct(A, B)
-    expected = sp.Matrix([
+    expected = Matrix([
         [a11 * b11, a11 * b12, a12 * b11, a12 * b12],
         [a11 * b21, a11 * b22, a12 * b21, a12 * b22],
         [a21 * b11, a21 * b12, a22 * b11, a22 * b12],
