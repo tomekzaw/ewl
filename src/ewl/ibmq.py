@@ -3,6 +3,7 @@ from typing import Dict, Optional
 
 from qiskit import QuantumCircuit, execute, Aer, IBMQ
 from qiskit.compiler import transpile
+from qiskit.extensions.unitary import UnitaryGate
 from qiskit.providers.aer import AerSimulator
 from qiskit.providers.aer.noise import NoiseModel
 from qiskit.providers.ibmq import least_busy
@@ -32,20 +33,21 @@ class EWL_IBMQ:
                                'or save account token using IBMQ.save_account function')
 
     def _make_qc(self, *, measure: bool) -> QuantumCircuit:
-        j = Operator(sympy_to_numpy_matrix(self.ewl.J))
-        j_h = Operator(sympy_to_numpy_matrix(self.ewl.J_H))
+        J = UnitaryGate(Operator(sympy_to_numpy_matrix(self.ewl.J)), label='$J$')
+        J_H = UnitaryGate(Operator(sympy_to_numpy_matrix(self.ewl.J_H)), label='$J^\\dagger$')
 
         all_qbits = range(self.ewl.number_of_players)
 
         qc = QuantumCircuit(self.ewl.number_of_players)
-        qc.append(j, all_qbits)
+        qc.append(J, all_qbits)
         qc.barrier()
 
-        for qbit, player in enumerate(self.ewl.players):
-            qc.append(Operator(sympy_to_numpy_matrix(player)), [qbit])
+        for i, player in enumerate(self.ewl.players):
+            U_i = UnitaryGate(Operator(sympy_to_numpy_matrix(player)), label=f'$U_{{{i}}}$')
+            qc.append(U_i, [i])
 
         qc.barrier()
-        qc.append(j_h, all_qbits)
+        qc.append(J_H, all_qbits)
 
         if measure:
             qc.measure_all()

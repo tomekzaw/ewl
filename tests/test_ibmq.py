@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 import sympy as sp
 from qiskit import QuantumCircuit
+from qiskit.extensions.unitary import UnitaryGate
 from qiskit.providers.aer.noise import NoiseModel
 from qiskit.quantum_info.operators import Operator
 from sympy import Matrix
@@ -58,37 +59,37 @@ def test_qc(ewl_fixed: EWL):
 
     ewl_ibmq = EWL_IBMQ(ewl_fixed)
 
-    j = Operator(np.array([
+    J = UnitaryGate(Operator(np.array([
         [1 / sqrt2, 0, 0, -i / sqrt2],
         [0, i / sqrt2, -1 / sqrt2, 0],
         [0, -1 / sqrt2, i / sqrt2, 0],
         [i / sqrt2, 0, 0, -1 / sqrt2],
-    ]))
+    ])), label='$J$')
 
-    j_h = Operator(np.array([
+    J_H = UnitaryGate(Operator(np.array([
         [1 / sqrt2, 0, 0, -i / sqrt2],
         [0, -i / sqrt2, -1 / sqrt2, 0],
         [0, -1 / sqrt2, -i / sqrt2, 0],
         [i / sqrt2, 0, 0, -1 / sqrt2],
-    ]))
+    ])), label='$J^\\dagger$')
 
-    u_a = Operator(np.array([
+    U_0 = UnitaryGate(Operator(np.array([
         [i / sqrt2, i / sqrt2],
         [i / sqrt2, -i / sqrt2]
-    ]))
+    ])), label='$U_{0}$')
 
-    u_b = Operator(np.array([
+    U_1 = UnitaryGate(Operator(np.array([
         [1, 0],
         [0, 1],
-    ]))
+    ])), label='$U_{1}$')
 
     qc = QuantumCircuit(2)
-    qc.append(j, [0, 1])
+    qc.append(J, [0, 1])
     qc.barrier()
-    qc.append(u_a, [0])
-    qc.append(u_b, [1])
+    qc.append(U_0, [0])
+    qc.append(U_1, [1])
     qc.barrier()
-    qc.append(j_h, [0, 1])
+    qc.append(J_H, [0, 1])
     qc.measure_all()
 
     assert ewl_ibmq.qc == qc
