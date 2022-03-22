@@ -92,12 +92,12 @@ You also need to define the payoff matrix, possibly with symbols, for arbitrary 
 ```python
 payoff_matrix = sp.Array([
     [
-        [3, 5],
-        [0, 1],
-    ],
-    [
         [3, 0],
         [5, 1],
+    ],
+    [
+        [3, 5],
+        [0, 1],
     ],
 ])
 ```
