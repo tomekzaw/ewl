@@ -5,7 +5,7 @@ with open('README.md', 'r', encoding='utf-8') as fh:
 
 setuptools.setup(
     name='ewl',
-    version='0.7.0',
+    version='0.8.0',
     author='Piotr Kotara, Tomasz Zawadzki',
     author_email='piotrekkotara@gmail.com, tomekzawadzki98@gmail.com',
     description='A simple Python library to simulate and execute EWL quantum circuits on IBM Q.',
