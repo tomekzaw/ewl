@@ -28,14 +28,14 @@ if __name__ == '__main__':
         ],
     ])
 
-    theta_A, phi_A, alpha_A = sp.symbols('theta_A phi_A alpha_A')
+    theta_A, phi_A, alpha_A = sp.symbols('theta_A phi_A alpha_A', real=True)
 
     A_hat = U_theta_phi_alpha(theta=theta_A, phi=phi_A, alpha=alpha_A)
     B_hat = U_theta_phi_alpha(theta=theta_A + pi, phi=alpha_A, alpha=phi_A - pi / 2)
     A_hat_prim = U_theta_phi_alpha(theta=theta_A, phi=phi_A - pi / 2, alpha=alpha_A - pi / 2)
     B_hat_prim = U_theta_phi_alpha(theta=theta_A + pi, phi=alpha_A - pi / 2, alpha=phi_A - pi)
 
-    gamma_A, gamma_B = sp.symbols('gamma_A gamma_B')
+    gamma_A, gamma_B = sp.symbols('gamma_A gamma_B', real=True)
 
     alice = MixedStrategy([
         (sp.cos(gamma_A / 2) ** 2, A_hat),
