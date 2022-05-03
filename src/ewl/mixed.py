@@ -23,7 +23,7 @@ def kraus(U: Matrix, rho: Matrix) -> Matrix:
 class MixedStrategy:
     strategies: List[Tuple[Expr, Matrix]]
 
-    @property
+    @cached_property
     def params(self) -> Set[Symbol]:
         return set().union(*(prob.atoms(Symbol) | strategy.atoms(Symbol) for prob, strategy in self.strategies))
 
