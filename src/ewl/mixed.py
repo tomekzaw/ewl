@@ -9,7 +9,7 @@ from sympy import Array, Matrix, Symbol
 from sympy.physics.quantum import TensorProduct
 import sympy as sp
 
-from ewl import EWL
+from ewl import BaseEWL
 from ewl.utils import cache, number_of_qubits, qubit_to_matrix
 
 Expr = Any
@@ -36,7 +36,7 @@ class MixedStrategy:
         ])
 
 
-class MixedEWL(EWL):
+class MixedEWL(BaseEWL):
     def __init__(self, *, psi, C: Matrix, D: Matrix, players: Sequence[MixedStrategy], payoff_matrix: Optional[Array] = None):
         assert number_of_qubits(psi) == len(players), 'Number of qubits and players must be equal'
 
