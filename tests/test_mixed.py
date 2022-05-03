@@ -87,6 +87,11 @@ def test_MixedEWL_params(mixed_ewl: MixedEWL, mixed_ewl_fixed: MixedEWL) -> None
     assert mixed_ewl_fixed.params == {gamma_A, gamma_B}
 
 
+def test_MixedEWL_fix(mixed_ewl: MixedEWL) -> None:
+    # TODO: implement
+    pass
+
+
 def test_MixedEWL_amplitudes(mixed_ewl: MixedEWL) -> None:
     with pytest.raises(NotImplementedError):
         mixed_ewl.amplitudes()
