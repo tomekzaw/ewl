@@ -68,6 +68,11 @@ def test_kraus() -> None:
     pass
 
 
+def test_MixedStrategy_invalid_sum() -> None:
+    with pytest.raises(AssertionError):
+        MixedStrategy([(0.9, C), (0.2, D)], check_sum=True)
+
+
 def test_MixedStrategy_params(alice: MixedStrategy, bob: MixedStrategy) -> None:
     assert alice.params == {gamma_A, theta_A, alpha_A, phi_A}
     assert bob.params == {gamma_B, theta_A, alpha_A, phi_A}

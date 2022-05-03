@@ -21,7 +21,11 @@ def kraus(U: Matrix, rho: Matrix) -> Matrix:
 
 @dataclass
 class MixedStrategy:
-    strategies: List[Tuple[Expr, Matrix]]
+    def __init__(self, strategies: List[Tuple[Expr, Matrix]], *, check_sum: bool = True):
+        if check_sum:
+            assert sp.simplify(sum(prob for prob, _ in strategies)) == 1
+
+        self.strategies = strategies
 
     @cached_property
     def params(self) -> Set[Symbol]:
