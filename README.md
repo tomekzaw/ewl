@@ -166,6 +166,34 @@ You can also substitute the symbols with specific values to obtain a non-paramet
 ewl_fixed = ewl.fix(theta=0, gamma=pi / 2)
 ```
 
+### Mixed strategies
+
+The library also supports quantum games with mixed strategies. You can define a mixed strategy by passing a list of probabilities and corresponding pure strategies:
+
+```python
+from ewl.mixed import MixedStrategy
+
+alice = MixedStrategy([(p1, U1), (p2, U2)])
+```
+
+**Note:** The library will check if the probabilities sum up to 1. To disable this check, pass `check_sum=False`.
+
+Then you can create an instance of EWL quantum game with mixed strategies:
+
+```python
+from ewl.mixed import MixedEWL
+
+mixed_ewl = MixedEWL(psi=psi, C=C, D=D, players=[alice, bob], payoff_matrix=payoff_matrix)
+```
+
+The major difference is that you cannot call `amplitudes` method due to the fact that the state of quantum game with mixed strategies cannot be expressed as a vector in a general case. Instead, you can calculate the density matrix.
+
+```python
+mixed_ewl.density_matrix()
+```
+
+Other properties and methods such as `J`, `J_H`, `params`, `fix`, `probs` and `payoff_function` behave similarly as for the regular EWL instance with pure strategies.
+
 ### Qiskit integration
 
 This library also integrates with [Qiskit](https://qiskit.org/), allowing arbitrary quantum games in the EWL protocol to be executed on [IBM Q](https://www.ibm.com/quantum-computing/) devices. First, you need to load your credentials:
