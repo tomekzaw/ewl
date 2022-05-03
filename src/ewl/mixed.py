@@ -5,9 +5,9 @@ from functools import cached_property, reduce
 from operator import add
 from typing import Any, List, Optional, Set, Sequence, Tuple
 
+import sympy as sp
 from sympy import Array, Matrix, Symbol
 from sympy.physics.quantum import TensorProduct
-import sympy as sp
 
 from ewl import BaseEWL
 from ewl.utils import cache, number_of_qubits, qubit_to_matrix

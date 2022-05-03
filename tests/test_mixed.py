@@ -1,7 +1,8 @@
+from typing import Any
+
 import pytest
 import sympy as sp
 from sympy.physics.quantum.qubit import Qubit
-from typing import Any
 
 from ewl.mixed import MixedEWL, MixedStrategy
 from ewl.parametrizations import U_theta_phi_alpha
