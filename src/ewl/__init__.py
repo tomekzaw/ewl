@@ -13,7 +13,7 @@ from ewl.utils import amplitude_to_prob, cache, convert_exp_to_trig, is_unitary,
 
 
 class EWL:
-    def __init__(self, *, psi, C: Matrix, D: Matrix, players: Sequence[Matrix], payoff_matrix: Optional[Array] = None, check_unitary: Optional[bool] = True):
+    def __init__(self, *, psi, C: Matrix, D: Matrix, players: Sequence[Matrix], payoff_matrix: Optional[Array] = None, check_unitary: bool = True):
         assert number_of_qubits(psi) == len(players), 'Number of qubits and players must be equal'
 
         if check_unitary:
