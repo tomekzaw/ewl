@@ -13,11 +13,12 @@ from ewl.utils import amplitude_to_prob, cache, convert_exp_to_trig, is_unitary,
 
 
 class EWL:
-    def __init__(self, *, psi, C: Matrix, D: Matrix, players: Sequence[Matrix], payoff_matrix: Optional[Array] = None):
+    def __init__(self, *, psi, C: Matrix, D: Matrix, players: Sequence[Matrix], payoff_matrix: Optional[Array] = None, check_unitary: Optional[bool] = True):
         assert number_of_qubits(psi) == len(players), 'Number of qubits and players must be equal'
 
-        for i, player in enumerate(players):
-            assert is_unitary(player), f'Player {i} strategy is not unitary'
+        if check_unitary:
+            for i, player in enumerate(players):
+                assert is_unitary(player), f'Player {i} strategy is not unitary'
 
         if payoff_matrix is not None:
             assert payoff_matrix.rank() == len(players) + 1, 'Invalid number of dimensions of payoff matrix'
