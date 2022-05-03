@@ -58,13 +58,13 @@ class EWL_IBMQ:
     def qc(self) -> QuantumCircuit:
         return self._make_qc(measure=True)
 
-    def draw(self):
-        return self.qc.draw('mpl')
+    def draw(self, **kwargs):
+        return self.qc.draw('mpl', **kwargs)
 
-    def draw_transpiled(self, backend_name: str, *, optimization_level: int = 3):
+    def draw_transpiled(self, backend_name: str, *, optimization_level: int = 3, **kwargs):
         backend = self._provider.get_backend(backend_name)
         transpiled_qc = transpile(self.qc, backend, optimization_level=optimization_level)
-        return transpiled_qc.draw('mpl')
+        return transpiled_qc.draw('mpl', **kwargs)
 
     def simulate_probs(self, backend_name: str = 'statevector_simulator') -> Dict[str, float]:
         circ = self._make_qc(measure=False)
