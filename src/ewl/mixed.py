@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import cached_property, reduce
 from operator import add
-from typing import Any, List, Optional, Set, Sequence, Tuple
+from typing import Any, Optional, Set, Sequence, Tuple
 
 import sympy as sp
 from sympy import Array, Matrix, Symbol
@@ -21,7 +21,7 @@ def kraus(U: Matrix, rho: Matrix) -> Matrix:
 
 @dataclass
 class MixedStrategy:
-    def __init__(self, strategies: List[Tuple[Expr, Matrix]], *, check_sum: bool = True):
+    def __init__(self, strategies: Sequence[Tuple[Expr, Matrix]], *, check_sum: bool = True):
         if check_sum:
             assert sp.simplify(sum(prob for prob, _ in strategies)) == 1, f'Probabilities must sum up to 1'
 
