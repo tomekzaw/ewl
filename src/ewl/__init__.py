@@ -46,7 +46,7 @@ class EWL:
         replacements = {params[symbol]: value for symbol, value in kwargs.items()}
         psi = self.psi.subs(replacements)
         players = [player.subs(replacements) for player in self.players]
-        payoff_matrix = self.payoff_matrix.subs(params) if self.payoff_matrix is not None else None
+        payoff_matrix = self.payoff_matrix.subs(replacements) if self.payoff_matrix is not None else None
         return EWL(psi=psi, C=self.C, D=self.D, players=players, payoff_matrix=payoff_matrix)
 
     @cached_property
