@@ -23,7 +23,7 @@ def kraus(U: Matrix, rho: Matrix) -> Matrix:
 class MixedStrategy:
     def __init__(self, strategies: Sequence[Tuple[Expr, Matrix]], *, check_sum: bool = True):
         if check_sum:
-            assert sp.simplify(sum(prob for prob, _ in strategies)) == 1, f'Probabilities must sum up to 1'
+            assert sp.simplify(sum(prob for prob, _ in strategies)) == 1, 'Probabilities must sum up to 1'
 
         self.strategies = strategies
 
