@@ -46,7 +46,7 @@ class BaseEWL(ABC):
 
 
 class EWL(BaseEWL):
-    def __init__(self, *, psi, C: Matrix, D: Matrix, players: Sequence[Matrix], payoff_matrix: Optional[Array] = None, check_unitary: Optional[bool] = True):
+    def __init__(self, *, psi, C: Matrix, D: Matrix, players: Sequence[Matrix], payoff_matrix: Optional[Array] = None, check_unitary: bool = True):
         assert number_of_qubits(psi) == len(players), 'Number of qubits and players must be equal'
 
         if check_unitary:
@@ -75,7 +75,7 @@ class EWL(BaseEWL):
         replacements = {params[symbol]: value for symbol, value in kwargs.items()}
         psi = self.psi.subs(replacements)
         players = [player.subs(replacements) for player in self.players]
-        payoff_matrix = self.payoff_matrix.subs(params) if self.payoff_matrix is not None else None
+        payoff_matrix = self.payoff_matrix.subs(replacements) if self.payoff_matrix is not None else None
         return EWL(psi=psi, C=self.C, D=self.D, players=players, payoff_matrix=payoff_matrix)
 
     @cache
