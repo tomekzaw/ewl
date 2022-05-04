@@ -28,7 +28,7 @@ payoff_matrix = Array([
 
 def make_Quantum_Prisoners_Dilemma_Eisert_Wilkens_Lewenstein() -> EWL:
     """
-    Quantum Prisoner's Dillema with original EWL parametrization
+    Quantum Prisoner's Dilemma with original EWL parametrization
     from "Quantum Games and Quantum Strategies" by Jens Eisert, Martin Wilkens and Maciej Lewenstein
     (https://arxiv.org/pdf/quant-ph/9806088.pdf)
     """
@@ -43,7 +43,7 @@ def make_Quantum_Prisoners_Dilemma_Eisert_Wilkens_Lewenstein() -> EWL:
 
 def make_Quantum_Prisoners_Dilemma_Chen() -> EWL:
     """
-    Quantum Prisoner's Dillema with full SU(2) parametrization
+    Quantum Prisoner's Dilemma with full SU(2) parametrization
     from "How Well Do People Play a Quantum Prisoner's Dilemma?" by Kay-Yut Chen and Tad Hogg
     (https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.73.1344&rep=rep1&type=pdf)
     """
@@ -58,7 +58,7 @@ def make_Quantum_Prisoners_Dilemma_Chen() -> EWL:
 
 def make_Quantum_Prisoners_Dilemma_Szopa() -> EWL:
     """
-    Quantum Prisoner's Dillema with full SU(2) parametrization
+    Quantum Prisoner's Dilemma with full SU(2) parametrization
     from "Dlaczego w dylemat więźnia warto grać kwantowo?" by Marek Szopa
     (https://www.ue.katowice.pl/fileadmin/_migrated/content_uploads/11_M.Szopa__Dlaczego_w_dylemat_wieznia....pdf)
     """
@@ -73,7 +73,7 @@ def make_Quantum_Prisoners_Dilemma_Szopa() -> EWL:
 
 def make_Quantum_Prisoners_Dilemma_theta_alpha_beta() -> EWL:
     """
-    Quantum Prisoner's Dillema with full SU(2) parametrization
+    Quantum Prisoner's Dilemma with full SU(2) parametrization
     from "Quantum games with strategies induced by basis change rules" by Piotr Frąckiewicz and Jarosław Pykacz
     (https://www.researchgate.net/publication/317754594_Quantum_Games_with_Strategies_Induced_by_Basis_Change_Rules/fulltext/59601fed0f7e9b8194fc0d96/Quantum-Games-with-Strategies-Induced-by-Basis-Change-Rules.pdf)
     """
@@ -88,7 +88,7 @@ def make_Quantum_Prisoners_Dilemma_theta_alpha_beta() -> EWL:
 
 def make_Quantum_Prisoners_Dilemma_Frackiewicz_Pykacz() -> EWL:
     """
-    Quantum Prisoner's Dillema with Frąckiewicz-Pykacz parametrization
+    Quantum Prisoner's Dilemma with Frąckiewicz-Pykacz parametrization
     from "Quantum games with strategies induced by basis change rules" by Piotr Frąckiewicz and Jarosław Pykacz
     (https://www.researchgate.net/publication/317754594_Quantum_Games_with_Strategies_Induced_by_Basis_Change_Rules/fulltext/59601fed0f7e9b8194fc0d96/Quantum-Games-with-Strategies-Induced-by-Basis-Change-Rules.pdf)
     """
