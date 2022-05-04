@@ -85,3 +85,7 @@ class EWL:
             probs[i] * payoff_matrix[idx]
             for i, idx in enumerate(product(range(2), repeat=self.number_of_players))
         )
+
+    def play(self, *players: Matrix, simplify: bool = True):
+        ewl = EWL(psi=self.psi, C=self.C, D=self.D, players=players, payoff_matrix=self.payoff_matrix)
+        return tuple(ewl.payoff_function(player=i, simplify=simplify) for i in range(ewl.number_of_players))
