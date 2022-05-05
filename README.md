@@ -178,6 +178,10 @@ It is also possible to substitute specific players' strategies for further analy
 ewl_CD = ewl.play(C, D)
 ```
 
+### Example games
+
+The library comes with a series of built-in example games, in particular a few variants of Quantum Prisoner's Dilemma with different parametrizations from various articles (see [here](https://github.com/tomekzaw/ewl/blob/master/src/ewl/games.py)).
+
 ### Qiskit integration
 
 This library also integrates with [Qiskit](https://qiskit.org/), allowing arbitrary quantum games in the EWL protocol to be executed on [IBM Q](https://www.ibm.com/quantum-computing/) devices. First, you need to load your credentials:
