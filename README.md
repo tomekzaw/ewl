@@ -142,6 +142,7 @@ ewl.payoff_function(player=None)  # payoff sum
 ```
 
 You can also obtain a tuple containing the payoffs for each respective player.
+
 ```python
 ewl.payoffs()
 ewl.payoffs(simplify=False)
