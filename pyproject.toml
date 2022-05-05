@@ -3,7 +3,10 @@ requires = [
     "setuptools>=42",
     "wheel",
     "numpy",
+    "sympy",
     "qiskit",
-    "pylatexenc"
+    "matplotlib",
+    "pylatexenc",
+    "ipympl"
 ]
 build-backend = "setuptools.build_meta"
