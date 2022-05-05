@@ -49,6 +49,9 @@ class EWL:
         payoff_matrix = self.payoff_matrix.subs(replacements) if self.payoff_matrix is not None else None
         return EWL(psi=psi, C=self.C, D=self.D, players=players, payoff_matrix=payoff_matrix)
 
+    def play(self, *players: Matrix) -> EWL:
+        return EWL(psi=self.psi, C=self.C, D=self.D, players=players, payoff_matrix=self.payoff_matrix)
+
     @cached_property
     def J(self) -> Matrix:
         return Matrix.hstack(*[
@@ -85,9 +88,6 @@ class EWL:
             probs[i] * payoff_matrix[idx]
             for i, idx in enumerate(product(range(2), repeat=self.number_of_players))
         )
-
-    def play(self, *players: Matrix) -> EWL:
-        return EWL(psi=self.psi, C=self.C, D=self.D, players=players, payoff_matrix=self.payoff_matrix)
 
     def payoffs(self, *, simplify: bool = True):
         return tuple(self.payoff_function(player=i, simplify=simplify) for i in range(self.number_of_players))
