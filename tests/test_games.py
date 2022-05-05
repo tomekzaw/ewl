@@ -17,10 +17,10 @@ theta_B, phi_B, alpha_B, beta_B = sp.symbols('theta_B phi_B alpha_B beta_B', rea
 
 def check_classical_payoffs(ewl: EWL) -> None:
     # from Fig. 1 in https://arxiv.org/pdf/quant-ph/0004076.pdf
-    assert ewl.play(ewl.C, ewl.C) == (3, 3)
-    assert ewl.play(ewl.C, ewl.D) == (0, 5)
-    assert ewl.play(ewl.D, ewl.C) == (5, 0)
-    assert ewl.play(ewl.D, ewl.D) == (1, 1)
+    assert ewl.play(ewl.C, ewl.C).payoffs() == (3, 3)
+    assert ewl.play(ewl.C, ewl.D).payoffs() == (0, 5)
+    assert ewl.play(ewl.D, ewl.C).payoffs() == (5, 0)
+    assert ewl.play(ewl.D, ewl.D).payoffs() == (1, 1)
 
 
 def test_make_Quantum_Prisoners_Dilemma_Eisert_Wilkens_Lewenstein() -> None:
@@ -34,7 +34,7 @@ def test_make_Quantum_Prisoners_Dilemma_Eisert_Wilkens_Lewenstein() -> None:
     # miracle move from Eq. 8 in https://arxiv.org/pdf/quant-ph/0004076.pdf
     Q = U_Eisert_Wilkens_Lewenstein(theta=0, phi=pi / 2)
     assert Q == Matrix([[i, 0], [0, -i]])
-    assert ewl.play(Q, Q) == (3, 3)
+    assert ewl.play(Q, Q).payoffs() == (3, 3)
 
 
 def test_make_Quantum_Prisoners_Dilemma_Chen() -> None:

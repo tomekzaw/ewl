@@ -86,6 +86,8 @@ class EWL:
             for i, idx in enumerate(product(range(2), repeat=self.number_of_players))
         )
 
-    def play(self, *players: Matrix, simplify: bool = True):
-        ewl = EWL(psi=self.psi, C=self.C, D=self.D, players=players, payoff_matrix=self.payoff_matrix)
-        return tuple(ewl.payoff_function(player=i, simplify=simplify) for i in range(ewl.number_of_players))
+    def play(self, *players: Matrix) -> EWL:
+        return EWL(psi=self.psi, C=self.C, D=self.D, players=players, payoff_matrix=self.payoff_matrix)
+
+    def payoffs(self, *, simplify: bool = True):
+        return tuple(self.payoff_function(player=i, simplify=simplify) for i in range(self.number_of_players))
