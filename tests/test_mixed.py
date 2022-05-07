@@ -16,7 +16,6 @@ C = sp.Matrix([[1, 0], [0, 1]])
 D = sp.Matrix([[0, i], [i, 0]])
 M = sp.Matrix([[0, 1], [1, 0]])
 
-
 payoff_matrix = sp.Array([
     [
         [3, 0],
