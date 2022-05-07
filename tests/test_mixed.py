@@ -131,10 +131,10 @@ def test_MixedEWL_density_matrix() -> None:
 
 def test_MixedEWL_probs(mixed_ewl: MixedEWL) -> None:
     expected_probs = sp.Matrix([[
-      0,
-      -sp.cos(gamma_A - gamma_B) / 4 - sp.cos(gamma_A + gamma_B) / 4 + 1 / 2,
-      sp.cos(gamma_A - gamma_B) / 4 + sp.cos(gamma_A + gamma_B) / 4 + 1 / 2,
-      0,
+        0,
+        -sp.cos(gamma_A - gamma_B) / 4 - sp.cos(gamma_A + gamma_B) / 4 + 1 / 2,
+        sp.cos(gamma_A - gamma_B) / 4 + sp.cos(gamma_A + gamma_B) / 4 + 1 / 2,
+        0,
     ]])
     assert mixed_ewl.probs().equals(expected_probs)
 
