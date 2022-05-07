@@ -1,5 +1,3 @@
-from typing import Any
-
 import pytest
 import sympy as sp
 from sympy.physics.quantum.qubit import Qubit
@@ -35,8 +33,6 @@ A_hat_prim = U_theta_phi_alpha(theta=theta_A, phi=phi_A - pi / 2, alpha=alpha_A 
 B_hat_prim = U_theta_phi_alpha(theta=-theta_A + pi, phi=-alpha_A, alpha=-phi_A + pi / 2)
 
 gamma_A, gamma_B = sp.symbols('gamma_A gamma_B', real=True)
-
-Expr = Any
 
 
 @pytest.fixture
