@@ -14,6 +14,8 @@ psi = (Qubit('00') + i * Qubit('11')) / sp.sqrt(2)
 
 C = sp.Matrix([[1, 0], [0, 1]])
 D = sp.Matrix([[0, i], [i, 0]])
+M = sp.Matrix([[0, 1], [1, 0]])
+
 
 payoff_matrix = sp.Array([
     [
@@ -67,8 +69,6 @@ def mixed_ewl_fixed(mixed_ewl: MixedEWL) -> MixedEWL:
 def test_kraus() -> None:
     assert D == kraus(C, D)
     assert C == kraus(D, C)
-
-    M = sp.Matrix([[0, 1], [1, 0]])
     assert M == kraus(D, M)
 
 
@@ -96,30 +96,29 @@ def test_MixedEWL_params(mixed_ewl: MixedEWL, mixed_ewl_fixed: MixedEWL) -> None
 
 
 def test_MixedEWL_fix(mixed_ewl: MixedEWL, mixed_ewl_fixed: MixedEWL) -> None:
-    theta_A_fix, phi_A_fix, alpha_A_fix = pi / 2, 0, 0
+    values = {
+        theta_A: pi / 2,
+        phi_A: 0,
+        alpha_A: 0,
+    }
 
-    A_hat_fix = U_theta_phi_alpha(theta=theta_A_fix, phi=phi_A_fix, alpha=alpha_A_fix)
-    B_hat_fix = U_theta_phi_alpha(theta=theta_A_fix + pi, phi=alpha_A_fix, alpha=phi_A_fix - pi / 2)
-    A_hat_prim_fix = U_theta_phi_alpha(theta=theta_A_fix, phi=phi_A_fix - pi / 2, alpha=alpha_A_fix - pi / 2)
-    B_hat_prim_fix = U_theta_phi_alpha(theta=theta_A_fix + pi, phi=alpha_A_fix - pi / 2, alpha=phi_A_fix - pi)
+    A_hat_fix = A_hat.subs(values)
+    B_hat_fix = U_theta_phi_alpha(theta=values[theta_A] + pi, phi=values[alpha_A], alpha=values[phi_A] - pi / 2)
+    A_hat_prim_fix = U_theta_phi_alpha(theta=values[theta_A], phi=values[phi_A] - pi / 2, alpha=values[alpha_A] - pi / 2)
+    B_hat_prim_fix = U_theta_phi_alpha(theta=values[theta_A] + pi, phi=values[alpha_A] - pi / 2, alpha=values[phi_A] - pi)
 
-    gamma_A, gamma_B = sp.symbols('gamma_A gamma_B', real=True)
-
-    alice_fixed: MixedStrategy = MixedStrategy([
+    alice_fixed = MixedStrategy([
         (sp.cos(gamma_A / 2) ** 2, A_hat_fix),
         (sp.sin(gamma_A / 2) ** 2, A_hat_prim_fix),
     ])
 
-    bob_fixed: MixedStrategy = MixedStrategy([
+    bob_fixed = MixedStrategy([
         (sp.cos(gamma_B / 2) ** 2, B_hat_fix),
         (sp.sin(gamma_B / 2) ** 2, B_hat_prim_fix),
     ])
 
-    manually_fixed_ewl = MixedEWL(psi=psi, C=C, D=D, players=[alice_fixed, bob_fixed], payoff_matrix=payoff_matrix)
-
-    assert mixed_ewl_fixed.psi == manually_fixed_ewl.psi
-    assert mixed_ewl_fixed.players[0] == mixed_ewl_fixed.players[0]
-    assert mixed_ewl_fixed.players[1] == mixed_ewl_fixed.players[1]
+    assert mixed_ewl_fixed.players[0] == alice_fixed
+    assert mixed_ewl_fixed.players[1] == bob_fixed
 
 
 def test_MixedEWL_amplitudes(mixed_ewl: MixedEWL) -> None:
@@ -130,18 +129,17 @@ def test_MixedEWL_amplitudes(mixed_ewl: MixedEWL) -> None:
 def test_MixedEWL_density_matrix(mixed_ewl_fixed: MixedEWL) -> None:
     alice_payoff_function = mixed_ewl_fixed.payoff_function(player=0)
 
-    print(mixed_ewl_fixed.density_matrix)
     expected_payoff = 5 * sp.cos(gamma_A - gamma_B) / 4 + 5 * sp.cos(gamma_A + gamma_B) / 4 + sp.sympify(5 / 2)
     assert sp.simplify(alice_payoff_function - expected_payoff) == 0
 
 
 def test_MixedEWL_probs(mixed_ewl: MixedEWL) -> None:
-    expectedProbs = sp.Matrix([
+    expected_probs = sp.Matrix([
         [0,
          -sp.cos(gamma_A - gamma_B) / 4 - sp.cos(gamma_A + gamma_B) / 4 + 1 / 2,
          sp.cos(gamma_A - gamma_B) / 4 + sp.cos(gamma_A + gamma_B) / 4 + 1 / 2,
          0]])
-    assert sp.simplify(mixed_ewl.probs() - expectedProbs) == sp.Matrix([[0, 0, 0, 0]])
+    assert mixed_ewl.probs().equals(expected_probs)
 
 
 def test_MixedEWL_probs_sum(mixed_ewl_fixed: MixedEWL) -> None:
@@ -149,5 +147,11 @@ def test_MixedEWL_probs_sum(mixed_ewl_fixed: MixedEWL) -> None:
 
 
 def test_MixedEWL_payoff_function(mixed_ewl: MixedEWL) -> None:
-    assert sp.simplify(mixed_ewl.payoff_function(player=0) - (5 * sp.cos(gamma_A - gamma_B) / 4 + 5 * sp.cos(gamma_A + gamma_B) / 4 + 5 / 2)) == 0
-    assert sp.simplify(mixed_ewl.payoff_function(player=1) - (-5 * sp.cos(gamma_A - gamma_B) / 4 - 5 * sp.cos(gamma_A + gamma_B) / 4 + 5 / 2)) == 0
+    actual_alice = mixed_ewl.payoff_function(player=0)
+    actual_bob = mixed_ewl.payoff_function(player=1)
+
+    expected_alice = 5 * sp.cos(gamma_A - gamma_B) / 4 + 5 * sp.cos(gamma_A + gamma_B) / 4 + 5 / 2
+    expected_bob = -5 * sp.cos(gamma_A - gamma_B) / 4 - 5 * sp.cos(gamma_A + gamma_B) / 4 + 5 / 2
+
+    assert actual_alice.equals(expected_alice)
+    assert actual_bob.equals(expected_bob)
