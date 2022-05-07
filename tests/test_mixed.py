@@ -125,10 +125,6 @@ def test_MixedEWL_amplitudes(mixed_ewl: MixedEWL) -> None:
         mixed_ewl.amplitudes()
 
 
-def test_MixedEWL_density_matrix() -> None:
-    pass
-
-
 def test_MixedEWL_probs(mixed_ewl: MixedEWL) -> None:
     expected_probs = sp.Matrix([[
         0,
