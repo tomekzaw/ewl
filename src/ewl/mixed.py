@@ -27,6 +27,9 @@ class MixedStrategy:
 
         self.strategies = strategies
 
+    def __eq__(self, other: MixedStrategy) -> bool:
+        return self.strategies == other.strategies
+
     @cached_property
     def params(self) -> Set[Symbol]:
         return set().union(*(prob.atoms(Symbol) | strategy.atoms(Symbol) for prob, strategy in self.strategies))
