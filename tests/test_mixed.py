@@ -78,7 +78,7 @@ def test_MixedStrategy_eq(alice: MixedStrategy, bob: MixedStrategy) -> None:
 
 
 def test_MixedStrategy_not_eq(alice: MixedStrategy, bob: MixedStrategy) -> None:
-    assert not alice == bob
+    assert alice != bob
 
 
 def test_MixedStrategy_params(alice: MixedStrategy, bob: MixedStrategy) -> None:
