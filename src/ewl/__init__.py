@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from functools import cached_property, reduce
 from itertools import product
 from operator import add
@@ -43,6 +43,15 @@ class BaseEWL(ABC):
             probs[i] * payoff_matrix[idx]
             for i, idx in enumerate(product(range(2), repeat=self.number_of_players))
         )
+
+    @property
+    @abstractmethod
+    def params(self) -> Set[Symbol]:
+        pass
+
+    @abstractmethod
+    def probs(self, *, simplify: bool = True) -> Matrix:
+        pass
 
 
 class EWL(BaseEWL):
