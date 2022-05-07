@@ -141,6 +141,13 @@ ewl.payoff_function(player=1, simplify=False)  # second player
 ewl.payoff_function(player=None)  # payoff sum
 ```
 
+You can also obtain a tuple containing the payoffs for each respective player.
+
+```python
+ewl.payoffs()
+ewl.payoffs(simplify=False)
+```
+
 For quantum games parametrized with exactly two symbols, it is possible to plot a three-dimensional graph of the payoff function.
 
 ```python
@@ -166,6 +173,11 @@ You can also substitute the symbols with specific values to obtain a non-paramet
 ewl_fixed = ewl.fix(theta=0, gamma=pi / 2)
 ```
 
+It is also possible to substitute specific players' strategies for further analysis of a certain case of the game.
+
+```python
+ewl_CD = ewl.play(C, D)
+```
 ### Mixed strategies
 
 The library also supports quantum games with mixed strategies. You can define a mixed strategy by passing a list of probabilities and corresponding pure strategies:
@@ -193,6 +205,10 @@ mixed_ewl.density_matrix()
 ```
 
 Other properties and methods such as `J`, `J_H`, `params`, `fix`, `probs` and `payoff_function` behave similarly as for the regular EWL instance with pure strategies.
+
+### Example games
+
+The library comes with a series of built-in example games, in particular a few variants of Quantum Prisoner's Dilemma with different parametrizations from various articles (see [here](https://github.com/tomekzaw/ewl/blob/master/src/ewl/games.py)).
 
 ### Qiskit integration
 

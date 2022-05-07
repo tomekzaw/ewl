@@ -78,6 +78,9 @@ class EWL(BaseEWL):
         payoff_matrix = self.payoff_matrix.subs(replacements) if self.payoff_matrix is not None else None
         return EWL(psi=psi, C=self.C, D=self.D, players=players, payoff_matrix=payoff_matrix)
 
+    def play(self, *players: Matrix) -> EWL:
+        return EWL(psi=self.psi, C=self.C, D=self.D, players=players, payoff_matrix=self.payoff_matrix)
+
     @cache
     def amplitudes(self, *, simplify: bool = True) -> Matrix:
         ampl = self.J_H @ TensorProduct(*self.players) @ qubit_to_matrix(self.psi)
@@ -88,3 +91,6 @@ class EWL(BaseEWL):
     @cache
     def probs(self, *, simplify: bool = True) -> Matrix:
         return self.amplitudes(simplify=simplify).applyfunc(amplitude_to_prob)
+
+    def payoffs(self, *, simplify: bool = True):
+        return tuple(self.payoff_function(player=i, simplify=simplify) for i in range(self.number_of_players))
