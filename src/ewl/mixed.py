@@ -28,7 +28,7 @@ class MixedStrategy:
         self.strategies = strategies
 
     def __eq__(self, other: MixedStrategy) -> bool:
-        return self.strategies == other.strategies
+        return all(p1.equals(p2) and s1.equals(s2) for (p1, s1), (p2, s2) in zip(self.strategies, other.strategies))
 
     @cached_property
     def params(self) -> Set[Symbol]:
